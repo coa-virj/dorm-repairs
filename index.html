@@ -105,6 +105,9 @@
   .logout-row span { font-size: 13px; color: var(--text-secondary); }
   .sync-indicator { font-size: 11px; color: var(--success-text); display: flex; align-items: center; gap: 4px; }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #639922; display: inline-block; }
+  .stat-card.filterable { cursor: pointer; transition: transform .1s, box-shadow .15s; }
+  .stat-card.filterable:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .stat-card.filterable:active { transform: scale(0.98); }
 </style>
 </head>
 <body>
@@ -140,9 +143,9 @@
   <div id="tab-summary" class="section" style="display:none">
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Total requests</div><div class="stat-val" id="s-total">—</div></div>
-      <div class="stat-card accent"><div class="stat-label">New</div><div class="stat-val" id="s-new">—</div></div>
-      <div class="stat-card warning"><div class="stat-label">On going</div><div class="stat-val" id="s-ongoing">—</div></div>
-      <div class="stat-card success"><div class="stat-label">Completed</div><div class="stat-val" id="s-done">—</div></div>
+      <div class="stat-card accent filterable" onclick="filterStatus('new')"><div class="stat-label">New</div><div class="stat-val" id="s-new">—</div></div>
+      <div class="stat-card warning filterable" onclick="filterStatus('ongoing')"><div class="stat-label">On going</div><div class="stat-val" id="s-ongoing">—</div></div>
+      <div class="stat-card success filterable" onclick="filterStatus('done')"><div class="stat-label">Completed</div><div class="stat-val" id="s-done">—</div></div>
     </div>
     <div class="progress-wrap">
       <h3>Status breakdown</h3>
@@ -150,7 +153,14 @@
       <div class="prog-row"><div class="prog-label"><span>On going</span><span id="p-ongoing-pct">0%</span></div><div class="prog-track"><div class="prog-bar ongoing" id="p-ongoing" style="width:0%"></div></div></div>
       <div class="prog-row"><div class="prog-label"><span>Completed</span><span id="p-done-pct">0%</span></div><div class="prog-track"><div class="prog-bar done" id="p-done" style="width:0%"></div></div></div>
     </div>
-    <div class="recent-wrap"><h3>Recent activity</h3><div id="s-recent"><div class="loading">Loading...</div></div></div>
+    <div class="recent-wrap" id="s-recent-wrap"><h3>Recent activity</h3><div id="s-recent"><div class="loading">Loading...</div></div></div>
+    <div class="recent-wrap" id="s-filtered" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 id="filtered-title">Filtered</h3>
+        <button class="btn btn-sm" onclick="clearFilter()">Clear filter</button>
+      </div>
+      <div id="s-filtered-list"></div>
+    </div>
   </div>
 
   <!-- BOARD -->
@@ -214,6 +224,17 @@
   let requests = [];
   let loggedIn = false;
   let currentTab = 'submit';
+  let activeFilter = null;
+
+  window.filterStatus = function(status) {
+    activeFilter = status;
+    renderSummary();
+  };
+
+  window.clearFilter = function() {
+    activeFilter = null;
+    renderSummary();
+  };
 
   // Real-time listener — fires on every change from any device
   const q = query(col, orderBy('createdAt', 'desc'));
@@ -327,12 +348,26 @@
     document.getElementById('p-new-pct').textContent = nwp + '%';
     document.getElementById('p-ongoing-pct').textContent = ogp + '%';
     document.getElementById('p-done-pct').textContent = dnp + '%';
-    const recent = requests.slice(0, 5);
     const dotClass = s => s === 'new' ? 'dot-new' : s === 'ongoing' ? 'dot-ongoing' : 'dot-done';
     const statusLabel = s => s === 'new' ? 'New' : s === 'ongoing' ? 'On going' : 'Completed';
-    document.getElementById('s-recent').innerHTML = recent.length
-      ? recent.map(r => `<div class="recent-item"><div class="recent-dot ${dotClass(r.status)}"></div><div><div class="recent-text">${esc(r.task)}</div><div class="recent-meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)} · ${statusLabel(r.status)}</div></div></div>`).join('')
-      : '<div class="empty">No requests yet.</div>';
+
+    if (activeFilter) {
+      document.getElementById('s-recent-wrap').style.display = 'none';
+      document.getElementById('s-filtered').style.display = '';
+      const labels = { new: 'New', ongoing: 'On going', done: 'Completed' };
+      const filtered = requests.filter(r => r.status === activeFilter);
+      document.getElementById('filtered-title').textContent = labels[activeFilter] + ' requests (' + filtered.length + ')';
+      document.getElementById('s-filtered-list').innerHTML = filtered.length
+        ? filtered.map(r => `<div class="request-card"><div class="task">${esc(r.task)}</div><div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}</div>${statusBadge(r.status)}${remarkHtml(r.remark)}</div>`).join('')
+        : '<div class="empty">No requests with this status.</div>';
+    } else {
+      document.getElementById('s-recent-wrap').style.display = '';
+      document.getElementById('s-filtered').style.display = 'none';
+      const recent = requests.slice(0, 5);
+      document.getElementById('s-recent').innerHTML = recent.length
+        ? recent.map(r => `<div class="recent-item"><div class="recent-dot ${dotClass(r.status)}"></div><div><div class="recent-text">${esc(r.task)}</div><div class="recent-meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)} · ${statusLabel(r.status)}</div></div></div>`).join('')
+        : '<div class="empty">No requests yet.</div>';
+    }
   }
 
   function renderBoard() {
