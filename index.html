@@ -8,7 +8,6 @@
 <style>
   :root {
     --bg: #f4f3f0;
-    --surface-0: #f4f3f0;
     --surface-1: #eeedea;
     --surface-2: #ffffff;
     --border: rgba(0,0,0,0.10);
@@ -20,13 +19,11 @@
     --accent: #185FA5;
     --accent-bg: #e6f1fb;
     --accent-text: #185FA5;
-    --accent-border: #85b7eb;
     --warning-bg: #faeeda;
     --warning-text: #854f0b;
     --warning-border: #ef9f27;
     --success-bg: #eaf3de;
     --success-text: #3b6d11;
-    --success-border: #97c459;
     --danger-text: #a32d2d;
     --danger-border: #f09595;
   }
@@ -34,7 +31,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
   .app { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
   .header { background: var(--surface-2); border-bottom: 0.5px solid var(--border); padding: 16px; position: sticky; top: 0; z-index: 10; }
-  .header h1 { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .header h1 { font-size: 18px; font-weight: 600; }
   .header p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
   .tab-bar { display: flex; border-bottom: 0.5px solid var(--border); background: var(--surface-2); position: sticky; top: 61px; z-index: 9; }
   .tab { flex: 1; padding: 10px 2px; font-size: 12px; font-weight: 500; text-align: center; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; font-family: inherit; }
@@ -48,6 +45,7 @@
   input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
   textarea { resize: vertical; min-height: 70px; }
   .btn { display: block; width: 100%; padding: 11px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); margin-top: 14px; transition: .15s; font-family: inherit; }
+  .btn:hover { background: #e0dedd; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .btn-primary:hover { background: #0c447c; }
@@ -63,8 +61,9 @@
   .remark-box strong { display: block; font-size: 11px; font-weight: 600; color: var(--accent-text); margin-bottom: 2px; }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .section-head { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .count { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 20px; padding: 1px 7px; font-size: 11px; color: var(--text-secondary); }
+  .count { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 20px; padding: 1px 7px; font-size: 11px; }
   .empty { text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 13px; }
+  .loading { text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 14px; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text-primary); color: #fff; padding: 10px 18px; border-radius: var(--radius); font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99; white-space: nowrap; }
   .toast.show { opacity: 1; }
   .alert { border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-bottom: 16px; }
@@ -73,16 +72,13 @@
   .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
   .remark-row { display: flex; gap: 6px; margin-top: 10px; align-items: flex-end; }
   .remark-row textarea { min-height: 48px; font-size: 13px; flex: 1; margin: 0; }
-  .remark-row button { flex-shrink: 0; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
-  /* summary */
   .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
   .stat-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
-  .stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
-  .stat-card .stat-val { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 600; line-height: 1; }
   .stat-card.accent .stat-val { color: var(--accent-text); }
   .stat-card.warning .stat-val { color: var(--warning-text); }
   .stat-card.success .stat-val { color: var(--success-text); }
-  .stat-card.primary .stat-val { color: var(--text-primary); }
   .progress-wrap, .recent-wrap { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
   .progress-wrap h3, .recent-wrap h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
   .prog-row { margin-bottom: 10px; }
@@ -94,20 +90,21 @@
   .prog-bar.done { background: #639922; }
   .recent-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
   .recent-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .recent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .recent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
   .dot-new { background: var(--accent); }
   .dot-ongoing { background: #EF9F27; }
   .dot-done { background: #639922; }
   .recent-text { font-size: 13px; flex: 1; }
   .recent-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-  /* login */
-  .login-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; }
-  .login-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 24px; width: 100%; max-width: 340px; }
+  .login-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
+  .login-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 24px; width: 100%; }
+  .login-card .lock-icon { font-size: 32px; color: var(--accent); margin-bottom: 12px; }
   .login-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
   .login-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-  .lock-icon { font-size: 32px; color: var(--accent); margin-bottom: 12px; }
   .logout-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .logout-row span { font-size: 13px; color: var(--text-secondary); }
+  .sync-indicator { font-size: 11px; color: var(--success-text); display: flex; align-items: center; gap: 4px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #639922; display: inline-block; }
 </style>
 </head>
 <body>
@@ -142,10 +139,10 @@
   <!-- SUMMARY -->
   <div id="tab-summary" class="section" style="display:none">
     <div class="stat-grid">
-      <div class="stat-card primary"><div class="stat-label">Total requests</div><div class="stat-val" id="s-total">0</div></div>
-      <div class="stat-card accent"><div class="stat-label">New</div><div class="stat-val" id="s-new">0</div></div>
-      <div class="stat-card warning"><div class="stat-label">On going</div><div class="stat-val" id="s-ongoing">0</div></div>
-      <div class="stat-card success"><div class="stat-label">Completed</div><div class="stat-val" id="s-done">0</div></div>
+      <div class="stat-card"><div class="stat-label">Total requests</div><div class="stat-val" id="s-total">—</div></div>
+      <div class="stat-card accent"><div class="stat-label">New</div><div class="stat-val" id="s-new">—</div></div>
+      <div class="stat-card warning"><div class="stat-label">On going</div><div class="stat-val" id="s-ongoing">—</div></div>
+      <div class="stat-card success"><div class="stat-label">Completed</div><div class="stat-val" id="s-done">—</div></div>
     </div>
     <div class="progress-wrap">
       <h3>Status breakdown</h3>
@@ -153,19 +150,18 @@
       <div class="prog-row"><div class="prog-label"><span>On going</span><span id="p-ongoing-pct">0%</span></div><div class="prog-track"><div class="prog-bar ongoing" id="p-ongoing" style="width:0%"></div></div></div>
       <div class="prog-row"><div class="prog-label"><span>Completed</span><span id="p-done-pct">0%</span></div><div class="prog-track"><div class="prog-bar done" id="p-done" style="width:0%"></div></div></div>
     </div>
-    <div class="recent-wrap"><h3>Recent activity</h3><div id="s-recent"></div></div>
+    <div class="recent-wrap"><h3>Recent activity</h3><div id="s-recent"><div class="loading">Loading...</div></div></div>
   </div>
 
   <!-- BOARD -->
   <div id="tab-board" class="section" style="display:none">
-    <div id="board-new"></div>
+    <div id="board-new"><div class="loading">Loading...</div></div>
     <div id="board-ongoing"></div>
     <div id="board-done"></div>
   </div>
 
   <!-- MANAGER -->
   <div id="tab-manager" class="section" style="display:none">
-    <!-- Login screen -->
     <div id="mgr-login" class="login-wrap">
       <div class="login-card">
         <div class="lock-icon"><i class="ti ti-lock"></i></div>
@@ -179,39 +175,55 @@
         <button class="btn btn-primary" style="margin-top:14px" onclick="doLogin()">Log in</button>
       </div>
     </div>
-    <!-- Manager panel -->
     <div id="mgr-panel" style="display:none">
       <div class="logout-row">
-        <span><i class="ti ti-shield-check" style="color:var(--success-text)"></i> Logged in as manager</span>
+        <span><i class="ti ti-shield-check" style="color:#3b6d11"></i> Logged in as manager</span>
         <button class="btn btn-sm" onclick="doLogout()">Log out</button>
       </div>
       <div class="alert alert-warning">Move requests between statuses and add remarks visible to everyone.</div>
-      <div id="mgr-board"></div>
+      <div id="mgr-board"><div class="loading">Loading...</div></div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-  // ── CHANGE THESE CREDENTIALS ──────────────────────────
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ── MANAGER CREDENTIALS — change these ──
   const MGR_USERNAME = 'admin';
   const MGR_PASSWORD = 'dorm1234';
-  // ─────────────────────────────────────────────────────
+  // ─────────────────────────────────────────
 
-  const STORAGE_KEY = 'dorm_requests_v2';
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwNsww4Z2989Ycsprp_NKhpaa1NXBjD1c",
+    authDomain: "dorm-request.firebaseapp.com",
+    projectId: "dorm-request",
+    storageBucket: "dorm-request.firebasestorage.app",
+    messagingSenderId: "62850630907",
+    appId: "1:62850630907:web:491742435248c87fb51c5e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const col = collection(db, 'requests');
+
   let requests = [];
   let loggedIn = false;
+  let currentTab = 'submit';
 
-  function load() {
-    try { const d = localStorage.getItem(STORAGE_KEY); if (d) requests = JSON.parse(d); } catch(e) {}
-    document.getElementById('f-date').valueAsDate = new Date();
+  // Real-time listener — fires on every change from any device
+  const q = query(col, orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snapshot) => {
+    requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     renderAll();
-  }
+  });
 
-  function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(requests)); } catch(e) {}
-  }
+  // Set today's date
+  document.getElementById('f-date').valueAsDate = new Date();
 
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -220,7 +232,7 @@
     setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  function doLogin() {
+  window.doLogin = function() {
     const u = document.getElementById('mgr-user').value.trim();
     const p = document.getElementById('mgr-pass').value;
     if (u === MGR_USERNAME && p === MGR_PASSWORD) {
@@ -232,32 +244,70 @@
     } else {
       document.getElementById('login-error').style.display = 'block';
     }
-  }
+  };
 
-  function doLogout() {
+  window.doLogout = function() {
     loggedIn = false;
     document.getElementById('mgr-login').style.display = 'flex';
     document.getElementById('mgr-panel').style.display = 'none';
     document.getElementById('mgr-user').value = '';
     document.getElementById('mgr-pass').value = '';
-  }
+  };
 
-  function renderAll() { renderSummary(); renderBoard(); if (loggedIn) renderManager(); }
-
-  function submitRequest() {
+  window.submitRequest = async function() {
     const name = document.getElementById('f-name').value.trim();
     const room = document.getElementById('f-room').value.trim();
     const date = document.getElementById('f-date').value;
     const task = document.getElementById('f-task').value.trim();
     if (!name || !task || !date) { toast('Please fill in all required fields.'); return; }
-    requests.unshift({ id: Date.now(), name, room, date, task, status: 'new', remark: '' });
-    save();
-    document.getElementById('f-name').value = '';
-    document.getElementById('f-room').value = '';
-    document.getElementById('f-task').value = '';
-    document.getElementById('f-date').valueAsDate = new Date();
-    toast('Request submitted!');
-    renderAll();
+    try {
+      await addDoc(col, { name, room, date, task, status: 'new', remark: '', createdAt: serverTimestamp() });
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-room').value = '';
+      document.getElementById('f-task').value = '';
+      document.getElementById('f-date').valueAsDate = new Date();
+      toast('Request submitted!');
+    } catch(e) { toast('Error submitting. Check connection.'); }
+  };
+
+  window.move = async function(id, status) {
+    try { await updateDoc(doc(db, 'requests', id), { status }); toast('Status updated.'); }
+    catch(e) { toast('Error updating.'); }
+  };
+
+  window.saveRemark = async function(id) {
+    const val = document.getElementById('rmk-' + id).value.trim();
+    try { await updateDoc(doc(db, 'requests', id), { remark: val }); toast('Remark saved.'); }
+    catch(e) { toast('Error saving remark.'); }
+  };
+
+  window.remove = async function(id) {
+    if (!confirm('Delete this request?')) return;
+    try { await deleteDoc(doc(db, 'requests', id)); toast('Request deleted.'); }
+    catch(e) { toast('Error deleting.'); }
+  };
+
+  function renderAll() {
+    renderSummary();
+    renderBoard();
+    if (loggedIn) renderManager();
+  }
+
+  function statusBadge(s) {
+    if (s === 'new') return '<span class="badge badge-new">New</span>';
+    if (s === 'ongoing') return '<span class="badge badge-ongoing">On going</span>';
+    return '<span class="badge badge-done">Completed</span>';
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    const [y,m,day] = d.split('-');
+    return `${day}/${m}/${y}`;
+  }
+
+  function remarkHtml(r) {
+    if (!r) return '';
+    return `<div class="remark-box"><strong>Manager's remark</strong>${esc(r)}</div>`;
   }
 
   function renderSummary() {
@@ -282,24 +332,7 @@
     const statusLabel = s => s === 'new' ? 'New' : s === 'ongoing' ? 'On going' : 'Completed';
     document.getElementById('s-recent').innerHTML = recent.length
       ? recent.map(r => `<div class="recent-item"><div class="recent-dot ${dotClass(r.status)}"></div><div><div class="recent-text">${esc(r.task)}</div><div class="recent-meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)} · ${statusLabel(r.status)}</div></div></div>`).join('')
-      : '<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:16px 0">No requests yet.</div>';
-  }
-
-  function statusBadge(s) {
-    if (s === 'new') return '<span class="badge badge-new">New</span>';
-    if (s === 'ongoing') return '<span class="badge badge-ongoing">On going</span>';
-    return '<span class="badge badge-done">Completed</span>';
-  }
-
-  function formatDate(d) {
-    if (!d) return '';
-    const [y,m,day] = d.split('-');
-    return `${day}/${m}/${y}`;
-  }
-
-  function remarkHtml(r) {
-    if (!r) return '';
-    return `<div class="remark-box"><strong>Manager's remark</strong>${esc(r)}</div>`;
+      : '<div class="empty">No requests yet.</div>';
   }
 
   function renderBoard() {
@@ -327,47 +360,29 @@
         <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}</div>
         ${statusBadge(r.status)}
         <div class="actions">
-          ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move(${r.id},'new')">Mark new</button>` : ''}
-          ${r.status !== 'ongoing' ? `<button class="btn btn-sm" onclick="move(${r.id},'ongoing')">On going</button>` : ''}
-          ${r.status !== 'done' ? `<button class="btn btn-sm" onclick="move(${r.id},'done')">Completed</button>` : ''}
-          <button class="btn btn-sm" style="color:var(--danger-text);border-color:var(--danger-border)" onclick="remove(${r.id})">Delete</button>
+          ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move('${r.id}','new')">Mark new</button>` : ''}
+          ${r.status !== 'ongoing' ? `<button class="btn btn-sm" onclick="move('${r.id}','ongoing')">On going</button>` : ''}
+          ${r.status !== 'done' ? `<button class="btn btn-sm" onclick="move('${r.id}','done')">Completed</button>` : ''}
+          <button class="btn btn-sm" style="color:var(--danger-text);border-color:var(--danger-border)" onclick="remove('${r.id}')">Delete</button>
         </div>
         <div class="remark-row">
           <textarea id="rmk-${r.id}" placeholder="Add a remark...">${esc(r.remark || '')}</textarea>
-          <button class="btn btn-sm" onclick="saveRemark(${r.id})">Save</button>
+          <button class="btn btn-sm" onclick="saveRemark('${r.id}')">Save</button>
         </div>
       </div>`).join('');
   }
 
-  function move(id, status) {
-    const r = requests.find(x => x.id === id);
-    if (r) { r.status = status; save(); renderAll(); toast('Status updated.'); }
-  }
-
-  function saveRemark(id) {
-    const r = requests.find(x => x.id === id);
-    const val = document.getElementById('rmk-' + id).value.trim();
-    if (r) { r.remark = val; save(); renderAll(); toast('Remark saved.'); }
-  }
-
-  function remove(id) {
-    requests = requests.filter(x => x.id !== id);
-    save(); renderAll(); toast('Request removed.');
-  }
-
-  function switchTab(name) {
+  window.switchTab = function(name) {
+    currentTab = name;
     ['submit','summary','board','manager'].forEach(t => {
       document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
       document.querySelectorAll('.tab')[['submit','summary','board','manager'].indexOf(t)].classList.toggle('active', t === name);
     });
-    renderAll();
-  }
+  };
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
-  load();
 </script>
 </body>
 </html>
