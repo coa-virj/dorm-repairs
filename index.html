@@ -201,7 +201,10 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const ARCHIVE_AFTER_DAYS = 15;
+  const ARCHIVE_AFTER_MS = ARCHIVE_AFTER_DAYS * 24 * 60 * 60 * 1000;
 
   // ── MANAGER CREDENTIALS — change these ──
   const MGR_USERNAME = 'admin';
@@ -225,6 +228,7 @@
   let loggedIn = false;
   let currentTab = 'submit';
   let activeFilter = null;
+  let mgrView = 'active'; // 'active' | 'archived'
 
   window.filterStatus = function(status) {
     activeFilter = status;
@@ -240,8 +244,22 @@
   const q = query(col, orderBy('createdAt', 'desc'));
   onSnapshot(q, (snapshot) => {
     requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    autoArchive();
     renderAll();
   });
+
+  async function autoArchive() {
+    const now = Date.now();
+    for (const r of requests) {
+      if (r.status !== 'done' || r.archived) continue;
+      const ts = r.completedAt?.toMillis ? r.completedAt.toMillis()
+              : r.createdAt?.toMillis ? r.createdAt.toMillis()
+              : null;
+      if (ts && (now - ts) >= ARCHIVE_AFTER_MS) {
+        try { await updateDoc(doc(db, 'requests', r.id), { archived: true, archivedAt: serverTimestamp(), autoArchived: true }); } catch(e) {}
+      }
+    }
+  }
 
   // Set today's date
   document.getElementById('f-date').valueAsDate = new Date();
@@ -282,7 +300,7 @@
     const task = document.getElementById('f-task').value.trim();
     if (!name || !task || !date) { toast('Please fill in all required fields.'); return; }
     try {
-      await addDoc(col, { name, room, date, task, status: 'new', remark: '', createdAt: serverTimestamp() });
+      await addDoc(col, { name, room, date, task, status: 'new', remark: '', archived: false, createdAt: serverTimestamp() });
       document.getElementById('f-name').value = '';
       document.getElementById('f-room').value = '';
       document.getElementById('f-task').value = '';
@@ -292,8 +310,28 @@
   };
 
   window.move = async function(id, status) {
-    try { await updateDoc(doc(db, 'requests', id), { status }); toast('Status updated.'); }
-    catch(e) { toast('Error updating.'); }
+    try {
+      const patch = { status };
+      if (status === 'done') patch.completedAt = serverTimestamp();
+      else { patch.completedAt = null; patch.archived = false; }
+      await updateDoc(doc(db, 'requests', id), patch);
+      toast('Status updated.');
+    } catch(e) { toast('Error updating.'); }
+  };
+
+  window.archiveRequest = async function(id) {
+    try { await updateDoc(doc(db, 'requests', id), { archived: true, archivedAt: serverTimestamp(), autoArchived: false }); toast('Archived.'); }
+    catch(e) { toast('Error archiving.'); }
+  };
+
+  window.unarchiveRequest = async function(id) {
+    try { await updateDoc(doc(db, 'requests', id), { archived: false }); toast('Restored.'); }
+    catch(e) { toast('Error restoring.'); }
+  };
+
+  window.setMgrView = function(v) {
+    mgrView = v;
+    renderManager();
   };
 
   window.saveRemark = async function(id) {
@@ -332,10 +370,11 @@
   }
 
   function renderSummary() {
-    const total = requests.length;
-    const nw = requests.filter(r => r.status === 'new').length;
-    const og = requests.filter(r => r.status === 'ongoing').length;
-    const dn = requests.filter(r => r.status === 'done').length;
+    const active = requests.filter(r => !r.archived);
+    const total = active.length;
+    const nw = active.filter(r => r.status === 'new').length;
+    const og = active.filter(r => r.status === 'ongoing').length;
+    const dn = active.filter(r => r.status === 'done').length;
     document.getElementById('s-total').textContent = total;
     document.getElementById('s-new').textContent = nw;
     document.getElementById('s-ongoing').textContent = og;
@@ -355,7 +394,7 @@
       document.getElementById('s-recent-wrap').style.display = 'none';
       document.getElementById('s-filtered').style.display = '';
       const labels = { new: 'New', ongoing: 'On going', done: 'Completed' };
-      const filtered = requests.filter(r => r.status === activeFilter);
+      const filtered = active.filter(r => r.status === activeFilter);
       document.getElementById('filtered-title').textContent = labels[activeFilter] + ' requests (' + filtered.length + ')';
       document.getElementById('s-filtered-list').innerHTML = filtered.length
         ? filtered.map(r => `<div class="request-card"><div class="task">${esc(r.task)}</div><div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}</div>${statusBadge(r.status)}${remarkHtml(r.remark)}</div>`).join('')
@@ -363,7 +402,7 @@
     } else {
       document.getElementById('s-recent-wrap').style.display = '';
       document.getElementById('s-filtered').style.display = 'none';
-      const recent = requests.slice(0, 5);
+      const recent = active.slice(0, 5);
       document.getElementById('s-recent').innerHTML = recent.length
         ? recent.map(r => `<div class="recent-item"><div class="recent-dot ${dotClass(r.status)}"></div><div><div class="recent-text">${esc(r.task)}</div><div class="recent-meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)} · ${statusLabel(r.status)}</div></div></div>`).join('')
         : '<div class="empty">No requests yet.</div>';
@@ -372,7 +411,7 @@
 
   function renderBoard() {
     const groups = { new: [], ongoing: [], done: [] };
-    requests.forEach(r => (groups[r.status] || groups.new).push(r));
+    requests.filter(r => !r.archived).forEach(r => (groups[r.status] || groups.new).push(r));
     [
       { key: 'new', label: 'New', el: 'board-new' },
       { key: 'ongoing', label: 'On going', el: 'board-ongoing' },
@@ -386,18 +425,40 @@
     });
   }
 
+  function fmtArchivedAt(r) {
+    const ts = r.archivedAt?.toDate ? r.archivedAt.toDate() : null;
+    if (!ts) return '';
+    const s = ts.toLocaleDateString();
+    return ` · Archived ${s}${r.autoArchived ? ' (auto)' : ''}`;
+  }
+
   function renderManager() {
     const el = document.getElementById('mgr-board');
-    if (!requests.length) { el.innerHTML = '<div class="empty">No requests submitted yet.</div>'; return; }
-    el.innerHTML = requests.map(r => `
+    const activeCount = requests.filter(r => !r.archived).length;
+    const archivedCount = requests.filter(r => r.archived).length;
+    const list = mgrView === 'archived'
+      ? requests.filter(r => r.archived)
+      : requests.filter(r => !r.archived);
+    const toggle = `
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn btn-sm" style="${mgrView==='active'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setMgrView('active')">Active (${activeCount})</button>
+        <button class="btn btn-sm" style="${mgrView==='archived'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setMgrView('archived')">Archived (${archivedCount})</button>
+      </div>`;
+    if (!list.length) { el.innerHTML = toggle + `<div class="empty">No ${mgrView} requests.</div>`; return; }
+    el.innerHTML = toggle + list.map(r => `
       <div class="request-card">
         <div class="task">${esc(r.task)}</div>
-        <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}</div>
+        <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}${fmtArchivedAt(r)}</div>
         ${statusBadge(r.status)}
         <div class="actions">
-          ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move('${r.id}','new')">Mark new</button>` : ''}
-          ${r.status !== 'ongoing' ? `<button class="btn btn-sm" onclick="move('${r.id}','ongoing')">On going</button>` : ''}
-          ${r.status !== 'done' ? `<button class="btn btn-sm" onclick="move('${r.id}','done')">Completed</button>` : ''}
+          ${!r.archived ? `
+            ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move('${r.id}','new')">Mark new</button>` : ''}
+            ${r.status !== 'ongoing' ? `<button class="btn btn-sm" onclick="move('${r.id}','ongoing')">On going</button>` : ''}
+            ${r.status !== 'done' ? `<button class="btn btn-sm" onclick="move('${r.id}','done')">Completed</button>` : ''}
+            <button class="btn btn-sm" onclick="archiveRequest('${r.id}')"><i class="ti ti-archive"></i> Archive</button>
+          ` : `
+            <button class="btn btn-sm" onclick="unarchiveRequest('${r.id}')"><i class="ti ti-archive-off"></i> Restore</button>
+          `}
           <button class="btn btn-sm" style="color:var(--danger-text);border-color:var(--danger-border)" onclick="remove('${r.id}')">Delete</button>
         </div>
         <div class="remark-row">
