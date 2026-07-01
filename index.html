@@ -194,6 +194,8 @@
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
         <button class="btn btn-sm" onclick="enableDesktopNotif()"><i class="ti ti-bell"></i> <span id="notif-btn-label">Enable desktop alerts</span></button>
         <button class="btn btn-sm" onclick="toggleEmailNotif()"><i class="ti ti-mail"></i> <span id="email-btn-label">Enable email alerts</span></button>
+        <button class="btn btn-sm" onclick="testTelegramNotif()"><i class="ti ti-send"></i> <span id="telegram-btn-label">Telegram: checking...</span></button>
+        <button class="btn btn-sm" onclick="testTextbeltNotif()"><i class="ti ti-message"></i> Test SMS (Textbelt)</button>
       </div>
       <div class="alert alert-warning">Move requests between statuses and add remarks visible to everyone.</div>
       <div id="mgr-board"><div class="loading">Loading...</div></div>
@@ -256,8 +258,15 @@
   // ─────────────────────────────────────────────────────────
 
   // ── TELEGRAM NOTIFICATION CONFIG ────────────────────────────
-  const TELEGRAM_BOT_TOKEN = '7550164208:AAEWrIv8LrpnMuNIY0T56LIUIY21zCHJS6g';
+  const TELEGRAM_BOT_TOKEN = '7550164208:AAEWrIv8LrpnMuNIY0T56LlUlY21zCHJS6g';
   const TELEGRAM_CHAT_ID   = '6988301529';
+  // ─────────────────────────────────────────────────────────
+
+  // ── TEXTBELT (FREE SMS FALLBACK) CONFIG ─────────────────────
+  // Free tier: 1 SMS per day, no signup. Used as a once-daily backup
+  // alongside Telegram/email — not meant as the primary channel.
+  const TEXTBELT_PHONE = '+639383824402';
+  const TEXTBELT_STORAGE_KEY = 'textbeltLastSentDate';
   // ─────────────────────────────────────────────────────────
 
   const emailReady = () =>
@@ -272,6 +281,10 @@
   let firstSnapshot = true;
   const seenIds = new Set();
 
+  const telegramReady = () =>
+    TELEGRAM_BOT_TOKEN && !TELEGRAM_BOT_TOKEN.startsWith('YOUR_') &&
+    TELEGRAM_CHAT_ID && !TELEGRAM_CHAT_ID.startsWith('YOUR_');
+
   function refreshNotifButtons() {
     const nb = document.getElementById('notif-btn-label');
     if (nb) {
@@ -284,6 +297,10 @@
     if (eb) {
       if (!emailReady()) eb.textContent = 'Email: add EmailJS keys';
       else eb.textContent = emailAlertsOn ? 'Email alerts on' : 'Enable email alerts';
+    }
+    const tb = document.getElementById('telegram-btn-label');
+    if (tb) {
+      tb.textContent = telegramReady() ? 'Telegram: configured (tap to test)' : 'Telegram: not configured';
     }
   }
 
@@ -325,15 +342,111 @@
     }).catch(err => console.warn('EmailJS error:', err));
   }
 
-  function fireTelegramNotif(r) {
-    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
-    const text = `🔧 New repair request\nName: ${r.name || ''}\nRoom: ${r.room || 'N/A'}\nIssue: ${r.task || ''}\nDate: ${r.date || ''}`;
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  function sendTelegramMessage(text) {
+    if (!telegramReady()) {
+      console.warn('Telegram not configured — missing bot token or chat ID.');
+      return Promise.resolve({ ok: false, reason: 'not_configured' });
+    }
+    return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
-    }).catch(err => console.warn('Telegram error:', err));
+    })
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          console.error('Telegram send failed:', res.status, data);
+          return { ok: false, status: res.status, data };
+        }
+        console.log('Telegram notification sent.');
+        return { ok: true, data };
+      })
+      .catch(err => {
+        console.error('Telegram network error:', err);
+        return { ok: false, reason: 'network_error', err };
+      });
   }
+
+  function fireTelegramNotif(r) {
+    const text =
+      `🔧 New Repair Request\n\n` +
+      `👤 Name: ${r.name || 'N/A'}\n` +
+      `🏠 Room: ${r.room || 'N/A'}\n` +
+      `📅 Date: ${formatDate(r.date) || r.date || 'N/A'}\n` +
+      `📝 Issue: ${r.task || 'N/A'}\n` +
+      `📌 Status: New`;
+    sendTelegramMessage(text).then(res => {
+      if (!res.ok) toast('Telegram alert failed — check console.');
+    });
+  }
+
+  window.testTelegramNotif = function() {
+    if (!telegramReady()) { toast('Telegram not configured — check bot token & chat ID.'); return; }
+    toast('Sending test message...');
+    sendTelegramMessage('✅ Test message from Dorm Repairs app. If you see this, Telegram alerts are working!')
+      .then(res => {
+        if (res.ok) toast('Test sent! Check Telegram.');
+        else toast('Test failed — check console for details.');
+      });
+  };
+
+  function textbeltAlreadySentToday() {
+    const last = localStorage.getItem(TEXTBELT_STORAGE_KEY);
+    const today = new Date().toDateString();
+    return last === today;
+  }
+
+  function fireTextbeltNotif(r) {
+    if (!TEXTBELT_PHONE) return;
+    if (textbeltAlreadySentToday()) {
+      console.log('Textbelt: daily free SMS already used today, skipping.');
+      return;
+    }
+    const message = `New repair request from ${r.name || 'N/A'} (${r.room || 'N/A'}): ${r.task || 'N/A'}`;
+    fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: TEXTBELT_PHONE, message, key: 'textbelt' })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.setItem(TEXTBELT_STORAGE_KEY, new Date().toDateString());
+          console.log('Textbelt SMS sent (free daily quota used).');
+        } else {
+          console.warn('Textbelt SMS failed:', data.error);
+          toast('SMS failed: ' + (data.error || 'unknown error'));
+        }
+      })
+      .catch(err => {
+        console.warn('Textbelt network error:', err);
+        toast('SMS failed — network error.');
+      });
+  }
+
+  window.testTextbeltNotif = function() {
+    if (!TEXTBELT_PHONE) { toast('Textbelt phone not configured.'); return; }
+    toast('Sending test SMS (uses your free daily quota)...');
+    fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: TEXTBELT_PHONE, message: 'Test SMS from Dorm Repairs app.', key: 'textbelt' })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log('Textbelt test response:', data);
+        if (data.success) {
+          localStorage.setItem(TEXTBELT_STORAGE_KEY, new Date().toDateString());
+          toast('Test SMS sent! Check your phone.');
+        } else {
+          toast('SMS failed: ' + (data.error || 'unknown error'));
+        }
+      })
+      .catch(err => {
+        console.warn('Textbelt network error:', err);
+        toast('SMS failed — network error.');
+      });
+  };
 
   // Real-time listener — fires on every change from any device
   const q = query(col, orderBy('createdAt', 'desc'));
@@ -408,6 +521,7 @@
     try {
       await addDoc(col, { name, room, date, task, status: 'new', remark: '', archived: false, createdAt: serverTimestamp() });
       fireTelegramNotif({ name, room, date, task });
+      fireTextbeltNotif({ name, room, date, task });
       document.getElementById('f-name').value = '';
       document.getElementById('f-room').value = '';
       document.getElementById('f-task').value = '';
