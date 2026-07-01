@@ -255,6 +255,11 @@
   const NOTIFY_EMAIL        = 'pdmuvirj@gmail.com';
   // ─────────────────────────────────────────────────────────
 
+  // ── TELEGRAM NOTIFICATION CONFIG ────────────────────────────
+  const TELEGRAM_BOT_TOKEN = '7550164208:AAEWrIv8LrpnMuNIY0T56LIUIY21zCHJS6g';
+  const TELEGRAM_CHAT_ID   = '6988301529';
+  // ─────────────────────────────────────────────────────────
+
   const emailReady = () =>
     window.emailjs &&
     EMAILJS_PUBLIC_KEY  && !EMAILJS_PUBLIC_KEY.startsWith('YOUR_') &&
@@ -320,6 +325,16 @@
     }).catch(err => console.warn('EmailJS error:', err));
   }
 
+  function fireTelegramNotif(r) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+    const text = `🔧 New repair request\nName: ${r.name || ''}\nRoom: ${r.room || 'N/A'}\nIssue: ${r.task || ''}\nDate: ${r.date || ''}`;
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
+    }).catch(err => console.warn('Telegram error:', err));
+  }
+
   // Real-time listener — fires on every change from any device
   const q = query(col, orderBy('createdAt', 'desc'));
   onSnapshot(q, (snapshot) => {
@@ -333,7 +348,7 @@
     });
     firstSnapshot = false;
     requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); });
+    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); fireTelegramNotif(r); });
     autoArchive();
     renderAll();
     refreshNotifButtons();
