@@ -348,7 +348,7 @@
     });
     firstSnapshot = false;
     requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); fireTelegramNotif(r); });
+    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); });
     autoArchive();
     renderAll();
     refreshNotifButtons();
@@ -407,6 +407,7 @@
     if (!name || !task || !date) { toast('Please fill in all required fields.'); return; }
     try {
       await addDoc(col, { name, room, date, task, status: 'new', remark: '', archived: false, createdAt: serverTimestamp() });
+      fireTelegramNotif({ name, room, date, task });
       document.getElementById('f-name').value = '';
       document.getElementById('f-room').value = '';
       document.getElementById('f-task').value = '';
