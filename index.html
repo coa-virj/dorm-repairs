@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dorm Repairs & Maintenance</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
     --bg: #f4f3f0;
@@ -190,6 +191,10 @@
         <span><i class="ti ti-shield-check" style="color:#3b6d11"></i> Logged in as manager</span>
         <button class="btn btn-sm" onclick="doLogout()">Log out</button>
       </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="enableDesktopNotif()"><i class="ti ti-bell"></i> <span id="notif-btn-label">Enable desktop alerts</span></button>
+        <button class="btn btn-sm" onclick="toggleEmailNotif()"><i class="ti ti-mail"></i> <span id="email-btn-label">Enable email alerts</span></button>
+      </div>
       <div class="alert alert-warning">Move requests between statuses and add remarks visible to everyone.</div>
       <div id="mgr-board"><div class="loading">Loading...</div></div>
     </div>
@@ -240,12 +245,98 @@
     renderSummary();
   };
 
+  // ── NOTIFICATION CONFIG ──────────────────────────────────
+  // EmailJS: sign up free at https://www.emailjs.com, create a Gmail service
+  // + a template with variables {{name}} {{room}} {{date}} {{task}}, then paste
+  // the three IDs below. Leave as-is to keep email alerts disabled.
+  const EMAILJS_PUBLIC_KEY  = 'Aiypm5_L1_57WmSbG';
+  const EMAILJS_SERVICE_ID  = 'service_kjv5sza';
+  const EMAILJS_TEMPLATE_ID = 'template_rxaoqex';
+  const NOTIFY_EMAIL        = 'pdmuvirj@gmail.com';
+  // ─────────────────────────────────────────────────────────
+
+  const emailReady = () =>
+    window.emailjs &&
+    EMAILJS_PUBLIC_KEY  && !EMAILJS_PUBLIC_KEY.startsWith('YOUR_') &&
+    EMAILJS_SERVICE_ID  && !EMAILJS_SERVICE_ID.startsWith('YOUR_') &&
+    EMAILJS_TEMPLATE_ID && !EMAILJS_TEMPLATE_ID.startsWith('YOUR_');
+
+  if (emailReady()) { try { window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e){} }
+
+  let emailAlertsOn = localStorage.getItem('emailAlertsOn') === '1';
+  let firstSnapshot = true;
+  const seenIds = new Set();
+
+  function refreshNotifButtons() {
+    const nb = document.getElementById('notif-btn-label');
+    if (nb) {
+      if (!('Notification' in window)) nb.textContent = 'Desktop alerts unsupported';
+      else if (Notification.permission === 'granted') nb.textContent = 'Desktop alerts on';
+      else if (Notification.permission === 'denied')  nb.textContent = 'Desktop alerts blocked';
+      else nb.textContent = 'Enable desktop alerts';
+    }
+    const eb = document.getElementById('email-btn-label');
+    if (eb) {
+      if (!emailReady()) eb.textContent = 'Email: add EmailJS keys';
+      else eb.textContent = emailAlertsOn ? 'Email alerts on' : 'Enable email alerts';
+    }
+  }
+
+  window.enableDesktopNotif = async function() {
+    if (!('Notification' in window)) { toast('This browser does not support notifications.'); return; }
+    if (Notification.permission === 'granted') { toast('Desktop alerts already on.'); return; }
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') { toast('Desktop alerts enabled.'); new Notification('Dorm Repairs', { body: 'You will be notified of new requests.' }); }
+    else toast('Permission denied.');
+    refreshNotifButtons();
+  };
+
+  window.toggleEmailNotif = function() {
+    if (!emailReady()) { toast('Add your EmailJS keys in the code first.'); return; }
+    emailAlertsOn = !emailAlertsOn;
+    localStorage.setItem('emailAlertsOn', emailAlertsOn ? '1' : '0');
+    toast(emailAlertsOn ? 'Email alerts on.' : 'Email alerts off.');
+    refreshNotifButtons();
+  };
+
+  function fireDesktopNotif(r) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      new Notification('New repair request', {
+        body: `${r.task}\n${r.name}${r.room ? ' · ' + r.room : ''}`,
+        tag: 'req-' + r.id,
+      });
+    } catch(e) {}
+  }
+
+  function fireEmailNotif(r) {
+    if (!emailAlertsOn || !emailReady()) return;
+    window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: NOTIFY_EMAIL,
+      name: r.name || '',
+      room: r.room || '',
+      date: r.date || '',
+      task: r.task || '',
+    }).catch(err => console.warn('EmailJS error:', err));
+  }
+
   // Real-time listener — fires on every change from any device
   const q = query(col, orderBy('createdAt', 'desc'));
   onSnapshot(q, (snapshot) => {
+    const newDocs = [];
+    snapshot.docChanges().forEach(ch => {
+      if (ch.type === 'added') {
+        const data = { id: ch.doc.id, ...ch.doc.data() };
+        if (!firstSnapshot && !seenIds.has(data.id)) newDocs.push(data);
+        seenIds.add(data.id);
+      }
+    });
+    firstSnapshot = false;
     requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); });
     autoArchive();
     renderAll();
+    refreshNotifButtons();
   });
 
   async function autoArchive() {
