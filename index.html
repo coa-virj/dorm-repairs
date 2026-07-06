@@ -60,6 +60,10 @@
   .request-card .meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
   .remark-box { background: var(--accent-bg); border-left: 2px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 10px; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
   .remark-box strong { display: block; font-size: 11px; font-weight: 600; color: var(--accent-text); margin-bottom: 2px; }
+  .feedback-box { background: var(--surface-1); border-left: 2px solid var(--text-muted); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 10px; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
+  .feedback-box strong { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px; }
+  .feedback-input-row { display: flex; gap: 6px; margin-top: 8px; align-items: flex-end; }
+  .feedback-input-row textarea { min-height: 44px; font-size: 13px; flex: 1; margin: 0; }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .section-head { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
   .count { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 20px; padding: 1px 7px; font-size: 11px; }
@@ -115,7 +119,7 @@
   .expand-chevron { color: var(--text-muted); font-size: 16px; flex-shrink: 0; margin-top: 3px; transition: transform .2s; }
   .request-card.open .expand-chevron { transform: rotate(180deg); }
   .request-card-details { max-height: 0; overflow: hidden; transition: max-height .25s ease, margin-top .25s ease; }
-  .request-card.open .request-card-details { max-height: 300px; margin-top: 8px; }
+  .request-card.open .request-card-details { max-height: 420px; margin-top: 8px; }
   .recent-item.expandable { cursor: pointer; align-items: center; }
   .recent-item.expandable:hover { background: var(--surface-1); border-radius: 6px; }
   .recent-details { max-height: 0; overflow: hidden; transition: max-height .25s ease, margin-top .25s ease; }
@@ -132,7 +136,7 @@
   <div class="tab-bar">
     <button class="tab active" onclick="switchTab('submit')">Submit</button>
     <button class="tab" onclick="switchTab('summary')">Summary</button>
-    <button class="tab" onclick="switchTab('board')">Board</button>
+    <button class="tab" onclick="switchTab('board')">Status/Feedback</button>
     <button class="tab" onclick="switchTab('manager')">Manager</button>
   </div>
 
@@ -580,6 +584,21 @@
     catch(e) { toast('Error saving remark.'); }
   };
 
+  window.saveFeedback = async function(id) {
+    const existing = requests.find(r => r.id === id);
+    if (existing && existing.feedback) { toast('Feedback already sent.'); return; }
+    const val = document.getElementById('fb-' + id).value.trim();
+    if (!val) { toast('Please write your feedback first.'); return; }
+    try { await updateDoc(doc(db, 'requests', id), { feedback: val }); toast('Feedback sent — it can\'t be edited.'); }
+    catch(e) { toast('Error sending feedback.'); }
+  };
+
+  window.resetFeedback = async function(id) {
+    if (!confirm('Clear this feedback and let the requester submit a new one?')) return;
+    try { await updateDoc(doc(db, 'requests', id), { feedback: '' }); toast('Feedback reset — open for a new submission.'); }
+    catch(e) { toast('Error resetting feedback.'); }
+  };
+
   window.remove = async function(id) {
     if (!confirm('Delete this request?')) return;
     try { await deleteDoc(doc(db, 'requests', id)); toast('Request deleted.'); }
@@ -609,8 +628,21 @@
     return `<div class="remark-box"><strong>Manager's remark</strong>${esc(r)}</div>`;
   }
 
-  function requestCardHtml(r) {
+  function feedbackHtml(f) {
+    if (!f) return '';
+    return `<div class="feedback-box"><strong>Requester feedback</strong>${esc(f)}</div>`;
+  }
+
+  function requestCardHtml(r, opts = {}) {
     const isOpen = expandedIds.has(r.id);
+    const feedbackSection = opts.allowFeedback
+      ? (r.feedback
+          ? `<div class="feedback-box"><strong>Your feedback</strong>${esc(r.feedback)}</div>`
+          : `<div class="feedback-input-row" onclick="event.stopPropagation()">
+              <textarea id="fb-${r.id}" placeholder="Write feedback about this request... (the feedback can't be edited once sent)"></textarea>
+              <button class="btn btn-sm" onclick="saveFeedback('${r.id}')">Send</button>
+            </div>`)
+      : '';
     return `<div class="request-card expandable ${isOpen ? 'open' : ''}" onclick="toggleExpand('${r.id}')">
       <div class="request-card-head">
         <div>
@@ -622,6 +654,8 @@
       <div class="request-card-details">
         ${statusBadge(r.status)}
         ${remarkHtml(r.remark)}
+        ${opts.allowFeedback ? '' : feedbackHtml(r.feedback)}
+        ${feedbackSection}
       </div>
     </div>`;
   }
@@ -693,7 +727,7 @@
       const items = groups[key];
       document.getElementById(el).innerHTML = `
         <div class="section-head">${label} <span class="count">${items.length}</span></div>
-        ${items.length ? items.map(r => requestCardHtml(r)).join('') : '<div class="empty">No requests here yet.</div>'}
+        ${items.length ? items.map(r => requestCardHtml(r, { allowFeedback: true })).join('') : '<div class="empty">No requests here yet.</div>'}
         <div class="divider"></div>`;
     });
   }
@@ -723,6 +757,7 @@
         <div class="task">${esc(r.task)}</div>
         <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}${fmtArchivedAt(r)}</div>
         ${statusBadge(r.status)}
+        ${feedbackHtml(r.feedback)}
         <div class="actions">
           ${!r.archived ? `
             ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move('${r.id}','new')">Mark new</button>` : ''}
@@ -732,6 +767,7 @@
           ` : `
             <button class="btn btn-sm" onclick="unarchiveRequest('${r.id}')"><i class="ti ti-archive-off"></i> Restore</button>
           `}
+          ${r.feedback ? `<button class="btn btn-sm" onclick="resetFeedback('${r.id}')"><i class="ti ti-refresh"></i> Reset feedback</button>` : ''}
           <button class="btn btn-sm" style="color:var(--danger-text);border-color:var(--danger-border)" onclick="remove('${r.id}')">Delete</button>
         </div>
         <div class="remark-row">
