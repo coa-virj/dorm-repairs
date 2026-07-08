@@ -1028,7 +1028,9 @@
   <div class="tab-panel active" id="tab-pairing">
     <button class="primary" id="pairingSetupToggleBtn" onclick="togglePairingSetup()" style="display:none;">– Hide Setup</button>
 
-    <div class="viewer-locked-note" id="pairingLockedBanner" style="display:none;">👁 You're viewing as a guest — only the organizer (or someone with the admin password) can add/remove players or regenerate pairings. <button onclick="openAdminRequest()" style="margin-top:6px;">🔑 Enter Admin Password</button></div>
+    <div class="viewer-locked-note" id="pairingLockedBanner" style="display:none;">👁 You're viewing as a guest — only the organizer (or someone with the admin password) can edit other players, change settings, or generate pairings. You can still add yourself to the player list below. <button onclick="openAdminRequest()" style="margin-top:6px;">🔑 Enter Admin Password</button></div>
+
+    <div class="card" id="selfEnrollPanel" style="display:none;"></div>
 
     <div class="card" id="pairingSetupForm">
       <label>Mode</label>
@@ -1195,6 +1197,8 @@ let matchRounds = []; // [{roundNum, courts:[{courtNumber,type,teamA,teamB,playe
 let expandedFinishedCourts = new Set();
 let roster = []; // [{id, name, skill}] — single source of truth for players and their skill
 let rosterIdCounter = 1;
+let myPlayerName = null; // this device's self-enrolled roster entry (viewers only) — matched by
+                          // name rather than id, since roster ids are re-assigned every reload/sync
 
 // Setup card collapses after a schedule is generated, so the pairing output
 // stays front and center — but stays one tap away in case someone wants to
@@ -1224,18 +1228,23 @@ function applyPairingSetupVisibility() {
   const form = document.getElementById('pairingSetupForm');
   const btn = document.getElementById('pairingSetupToggleBtn');
   const lockedBanner = document.getElementById('pairingLockedBanner');
+  const enrollPanel = document.getElementById('selfEnrollPanel');
   if (!form || !btn) return;
 
   if (!isAdmin) {
-    // Viewer — hide the whole setup form (and its toggle) and show a
-    // read-only banner with a way to request admin access instead.
+    // Viewer — hide the admin-only setup form (and its toggle), show a
+    // read-only banner with a way to request admin access, and show the
+    // self-enroll panel so a guest can still add themselves as a player —
+    // full setup/pairing control still stays admin-only.
     form.style.display = 'none';
     btn.style.display = 'none';
     if (lockedBanner) lockedBanner.style.display = 'block';
+    if (enrollPanel) { enrollPanel.style.display = 'block'; renderSelfEnrollPanel(); }
     return;
   }
 
   if (lockedBanner) lockedBanner.style.display = 'none';
+  if (enrollPanel) enrollPanel.style.display = 'none';
   form.style.display = pairingSetupOpen ? 'block' : 'none';
   btn.style.display = matchRounds.length ? 'block' : 'none'; // no need for a toggle before anything's been generated
   btn.textContent = pairingSetupOpen ? '– Hide Setup' : '+ Add Players / Edit Setup';
@@ -1296,6 +1305,7 @@ function leaveLeague() {
   document.getElementById('landingScreen').style.display = 'flex';
   isAdmin = false;
   joinedAsViewer = false;
+  myPlayerName = null;
   showLandingChoice();
 }
 
@@ -1655,6 +1665,7 @@ async function initFromStorage() {
   organizerName = league ? (league.organizerName || '') : organizerName;
   leagueName = league ? (league.leagueName || '') : '';
   const storedHash = await storGetPersonal('adminHash');
+  myPlayerName = await storGetPersonal('myPlayerName');
   // Only two ways to legitimately gain admin here:
   //  1) This device already proved it knows the org password (stored hash matches), or
   //  2) This device is the one bootstrapping a brand-new league that has never had a
@@ -1769,6 +1780,127 @@ async function saveRosterOnly() {
     ...existing,
     roster: roster.map(p => ({ name: p.name, skill: p.skill }))
   });
+}
+
+// ---------------- SELF-ENROLLMENT (viewers add themselves, admin keeps full control) ----------------
+// A viewer/guest can add their own name to the player list without the admin
+// password — but everything else (editing other players, settings, and
+// generating/regenerating pairings) still requires admin access. Matched by
+// NAME rather than roster id, since ids get reassigned every time the roster
+// reloads from storage.
+function mySelfEntry() {
+  if (!myPlayerName) return null;
+  return roster.find(p => p.name && p.name.trim().toLowerCase() === myPlayerName.trim().toLowerCase()) || null;
+}
+
+function renderSelfEnrollPanel() {
+  const panel = document.getElementById('selfEnrollPanel');
+  if (!panel) return;
+
+  const mine = mySelfEntry();
+  const others = roster.filter(p => p !== mine && p.name && p.name.trim());
+  const totalNamed = roster.filter(p => p.name && p.name.trim()).length;
+
+  let html = `<label>Player List<span class="count-pill">${totalNamed}</span></label>`;
+
+  if (others.length) {
+    html += `<div class="skill-hint" style="margin:2px 0 10px;">Already on the list: ${others.map(p => `${p.name} (${p.skill})`).join(', ')}</div>`;
+  } else if (!mine) {
+    html += `<div class="skill-hint" style="margin:2px 0 10px;">No one's on the list yet — be the first to join.</div>`;
+  }
+
+  if (mine) {
+    // Already enrolled on this device: show an editable skill row (their own
+    // only) and a way to leave. Reuses the same star-rating widget as the
+    // admin form.
+    const starsHtml = Array.from({ length: 10 }, (_, i) => i + 1)
+      .map(v => `<span class="star ${v <= mine.skill ? 'filled' : ''}" data-value="${v}">★</span>`)
+      .join('');
+    html += `
+      <div class="skill-row">
+        <div class="pname-input" style="width:34%;font-weight:700;">${mine.name.replace(/"/g, '&quot;')}</div>
+        <div class="star-rating" data-id="${mine.id}" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="${mine.skill}" title="Skill level: ${mine.skill}/10">${starsHtml}</div>
+        <div class="skill-badge" style="background:${skillColor(mine.skill)}">${mine.skill}</div>
+      </div>
+      <div class="skill-hint">✅ You're on the list as <strong>${mine.name}</strong> — drag the stars above any time to update your own skill level.</div>
+      <button class="secondary" onclick="leaveRosterSelf()" style="margin-top:10px;">Leave the Player List</button>
+    `;
+  } else {
+    html += `
+      <input type="text" id="selfEnrollName" placeholder="Your name">
+      <div class="error" id="selfEnrollError" style="display:none;margin-top:6px;"></div>
+      <button class="primary" onclick="submitSelfEnroll()" style="margin-top:10px;">🙋 Join the Player List</button>
+      <div class="skill-hint">You'll join at a default skill level of 5/10 — you can adjust it yourself right after joining. Only an admin can generate or change pairings.</div>
+    `;
+  }
+
+  html += `<button class="secondary" onclick="manualRefreshRoster()" style="margin-top:10px;">🔄 Refresh Player List</button>`;
+  panel.innerHTML = html;
+
+  if (mine) {
+    const starEl = panel.querySelector('.star-rating');
+    if (starEl) {
+      setupStarRating(starEl);
+      // setupStarRating only updates the in-memory roster; persist once the
+      // interaction (drag or keypress) actually ends.
+      starEl.addEventListener('pointerup', () => saveRosterOnly());
+      starEl.addEventListener('keydown', () => saveRosterOnly());
+    }
+  }
+
+  const nameInput = document.getElementById('selfEnrollName');
+  if (nameInput) {
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitSelfEnroll(); });
+  }
+}
+
+async function submitSelfEnroll() {
+  const input = document.getElementById('selfEnrollName');
+  const errorEl = document.getElementById('selfEnrollError');
+  if (!input) return;
+  const name = input.value.trim();
+  if (errorEl) errorEl.style.display = 'none';
+
+  if (!name) {
+    if (errorEl) { errorEl.textContent = 'Enter your name first.'; errorEl.style.display = 'block'; }
+    return;
+  }
+  const dup = roster.some(p => p.name && p.name.trim().toLowerCase() === name.toLowerCase());
+  if (dup) {
+    if (errorEl) { errorEl.textContent = 'That name is already on the list — pick a different name, or ask the organizer if it should be removed.'; errorEl.style.display = 'block'; }
+    return;
+  }
+
+  roster.push({ id: rosterIdCounter++, name, skill: 5 });
+  myPlayerName = name;
+  await storSetPersonal('myPlayerName', name);
+  await saveRosterOnly();
+  renderSelfEnrollPanel();
+}
+
+async function leaveRosterSelf() {
+  const mine = mySelfEntry();
+  if (!mine) return; // ownership check — can only remove your own self-enrolled entry
+  const ok = await appConfirm(`Remove yourself ("${mine.name}") from the player list?`);
+  if (!ok) return;
+  roster = roster.filter(p => p !== mine);
+  myPlayerName = null;
+  await storSetPersonal('myPlayerName', null);
+  await saveRosterOnly();
+  renderSelfEnrollPanel();
+}
+
+// Viewers don't get the live-sync roster reload the admin form gets implicitly
+// (roster is only reloaded wholesale in initFromStorage), so give them a
+// manual way to see players added from other devices.
+async function manualRefreshRoster() {
+  if (storageAvailable) {
+    const schedule = await storGet('schedule');
+    if (schedule && schedule.roster) {
+      roster = schedule.roster.map(p => ({ id: rosterIdCounter++, name: p.name, skill: p.skill }));
+    }
+  }
+  renderSelfEnrollPanel();
 }
 
 // 10-star skill rating: clickable (tap a star to set that level) and
