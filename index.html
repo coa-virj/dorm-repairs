@@ -3,791 +3,2871 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dorm Repairs & Maintenance</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<title>PickleVerge: Pairing & Scoring</title>
 <style>
   :root {
-    --bg: #f4f3f0;
-    --surface-1: #eeedea;
-    --surface-2: #ffffff;
-    --border: rgba(0,0,0,0.10);
-    --border-strong: rgba(0,0,0,0.18);
-    --text-primary: #1a1a18;
-    --text-secondary: #5f5e5a;
-    --text-muted: #888780;
-    --radius: 8px;
-    --accent: #185FA5;
-    --accent-bg: #e6f1fb;
-    --accent-text: #185FA5;
-    --warning-bg: #faeeda;
-    --warning-text: #854f0b;
-    --warning-border: #ef9f27;
-    --success-bg: #eaf3de;
-    --success-text: #3b6d11;
-    --danger-text: #a32d2d;
-    --danger-border: #f09595;
+    --court-green: #2d6a4f;
+    --court-light: #52b788;
+    --ball-yellow: #ffd60a;
+    --gold: #d4a017;
+    --silver: #9aa0a6;
+    --bronze: #b06a2c;
+    --ink: #1b2a2f;
+    --bg: #f4f7f5;
+    --card: #ffffff;
+    --border: #d8e2dc;
+    --skill-low: #e07a5f;
+    --skill-mid: #f2cc4c;
+    --skill-high: #2d6a4f;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
-  .app { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
-  .header { background: var(--surface-2); border-bottom: 0.5px solid var(--border); padding: 16px; position: sticky; top: 0; z-index: 10; }
-  .header h1 { font-size: 18px; font-weight: 600; }
-  .header p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-  .tab-bar { display: flex; border-bottom: 0.5px solid var(--border); background: var(--surface-2); position: sticky; top: 61px; z-index: 9; }
-  .tab { flex: 1; padding: 10px 2px; font-size: 12px; font-weight: 500; text-align: center; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; font-family: inherit; }
-  .tab.active { color: var(--accent-text); border-bottom: 2px solid var(--accent); }
-  .section { padding: 16px; }
-  .form-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .form-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
-  label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; margin-top: 12px; }
-  label:first-of-type { margin-top: 0; }
-  input, textarea { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); font-size: 14px; font-family: inherit; outline: none; transition: border .15s; }
-  input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
-  textarea { resize: vertical; min-height: 70px; }
-  .btn { display: block; width: 100%; padding: 11px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); margin-top: 14px; transition: .15s; font-family: inherit; }
-  .btn:hover { background: #e0dedd; }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: #0c447c; }
-  .btn-sm { font-size: 12px; padding: 6px 10px; width: auto; display: inline-block; margin-top: 0; }
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .badge-new { background: var(--accent-bg); color: var(--accent-text); }
-  .badge-ongoing { background: var(--warning-bg); color: var(--warning-text); }
-  .badge-done { background: var(--success-bg); color: var(--success-text); }
-  .request-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
-  .request-card .task { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  .request-card .meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
-  .remark-box { background: var(--accent-bg); border-left: 2px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 10px; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
-  .remark-box strong { display: block; font-size: 11px; font-weight: 600; color: var(--accent-text); margin-bottom: 2px; }
-  .feedback-box { background: var(--surface-1); border-left: 2px solid var(--text-muted); border-radius: 0 var(--radius) var(--radius) 0; padding: 8px 10px; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
-  .feedback-box strong { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px; }
-  .feedback-input-row { display: flex; gap: 6px; margin-top: 8px; align-items: flex-end; }
-  .feedback-input-row textarea { min-height: 44px; font-size: 13px; flex: 1; margin: 0; }
-  .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-  .section-head { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .count { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 20px; padding: 1px 7px; font-size: 11px; }
-  .empty { text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 13px; }
-  .loading { text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 14px; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text-primary); color: #fff; padding: 10px 18px; border-radius: var(--radius); font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99; white-space: nowrap; }
-  .toast.show { opacity: 1; }
-  .alert { border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-bottom: 16px; }
-  .alert-warning { background: var(--warning-bg); border: 0.5px solid var(--warning-border); color: var(--warning-text); }
-  .alert-danger { background: #fcebeb; border: 0.5px solid var(--danger-border); color: var(--danger-text); }
-  .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
-  .remark-row { display: flex; gap: 6px; margin-top: 10px; align-items: flex-end; }
-  .remark-row textarea { min-height: 48px; font-size: 13px; flex: 1; margin: 0; }
-  .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
-  .stat-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
-  .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
-  .stat-val { font-size: 26px; font-weight: 600; line-height: 1; }
-  .stat-card.accent .stat-val { color: var(--accent-text); }
-  .stat-card.warning .stat-val { color: var(--warning-text); }
-  .stat-card.success .stat-val { color: var(--success-text); }
-  .progress-wrap, .recent-wrap { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
-  .progress-wrap h3, .recent-wrap h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-  .prog-row { margin-bottom: 10px; }
-  .prog-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-  .prog-track { height: 8px; border-radius: 20px; background: var(--surface-1); overflow: hidden; }
-  .prog-bar { height: 100%; border-radius: 20px; transition: width .4s; }
-  .prog-bar.new { background: var(--accent); }
-  .prog-bar.ongoing { background: #EF9F27; }
-  .prog-bar.done { background: #639922; }
-  .recent-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
-  .recent-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .recent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-  .dot-new { background: var(--accent); }
-  .dot-ongoing { background: #EF9F27; }
-  .dot-done { background: #639922; }
-  .recent-text { font-size: 13px; flex: 1; }
-  .recent-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-  .login-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
-  .login-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 24px; width: 100%; }
-  .login-card .lock-icon { font-size: 32px; color: var(--accent); margin-bottom: 12px; }
-  .login-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .login-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-  .logout-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .logout-row span { font-size: 13px; color: var(--text-secondary); }
-  .sync-indicator { font-size: 11px; color: var(--success-text); display: flex; align-items: center; gap: 4px; }
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #639922; display: inline-block; }
-  .stat-card.filterable { cursor: pointer; transition: transform .1s, box-shadow .15s; }
-  .stat-card.filterable:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .stat-card.filterable:active { transform: scale(0.98); }
-  .request-card.expandable { cursor: pointer; transition: box-shadow .15s; }
-  .request-card.expandable:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .request-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .expand-chevron { color: var(--text-muted); font-size: 16px; flex-shrink: 0; margin-top: 3px; transition: transform .2s; }
-  .request-card.open .expand-chevron { transform: rotate(180deg); }
-  .request-card-details { max-height: 0; overflow: hidden; transition: max-height .25s ease, margin-top .25s ease; }
-  .request-card.open .request-card-details { max-height: 420px; margin-top: 8px; }
-  .recent-item.expandable { cursor: pointer; align-items: center; }
-  .recent-item.expandable:hover { background: var(--surface-1); border-radius: 6px; }
-  .recent-details { max-height: 0; overflow: hidden; transition: max-height .25s ease, margin-top .25s ease; }
-  .recent-item.open .recent-details { max-height: 200px; margin-top: 6px; }
-  .recent-item.open { align-items: flex-start; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 16px 14px 60px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 {
+    font-size: 1.3rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtitle { color: #5c6b66; font-size: 0.88rem; margin-bottom: 16px; }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 70px;
+    border: none;
+    background: transparent;
+    padding: 10px 6px;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #5c6b66;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: var(--court-green);
+    color: white;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    color: #33413c;
+  }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .row { display: flex; gap: 12px; margin-top: 14px; }
+  .row > div { flex: 1; }
+  input[type=number], input[type=text], input[type=password] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+  button.primary {
+    width: 100%;
+    margin-top: 16px;
+    background: var(--court-green);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.primary:active { transform: scale(0.98); }
+  button.secondary {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--bg);
+    color: var(--court-green);
+    border: 1.5px solid var(--court-green);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .count-pill {
+    display: inline-block;
+    background: var(--court-light);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  .round { margin-bottom: 18px; }
+  .round-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--court-green);
+  }
+  .court {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--court-green);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .court .label { font-size: 0.75rem; font-weight: 700; color: #7c8a85; text-transform: uppercase; }
+  .team { font-size: 0.95rem; font-weight: 600; }
+  .team .sk { font-size: 0.72rem; font-weight: 700; color: #7c8a85; }
+  .vs {
+    color: var(--ball-yellow);
+    background: var(--court-green);
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; font-weight:800; flex-shrink:0;
+  }
+  .bye { font-size: 0.85rem; color: #8a8a8a; margin-top: 4px; }
+  .error { color: #b3261e; font-size: 0.85rem; margin-top: 8px; }
+  .empty-state { text-align: center; color: #8a8a8a; padding: 30px 10px; font-size: 0.9rem; }
+
+  /* Skill levels panel */
+  .skill-list { margin-top: 6px; }
+  .skill-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-row .pname-input {
+    width: 34%;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 6px;
+    padding: 6px 6px;
+    font-family: inherit;
+    color: var(--ink);
+  }
+  .skill-row .pname-input:focus {
+    border-color: var(--court-light);
+    background: var(--bg);
+    outline: none;
+  }
+  .star-rating {
+    flex: 1;
+    display: flex;
+    gap: 2px;
+    touch-action: none;
+    user-select: none;
+    cursor: pointer;
+    min-width: 0;
+  }
+  .star-rating .star {
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--border);
+    flex: 1;
+    text-align: center;
+    transition: color 0.08s ease;
+  }
+  .star-rating .star.filled { color: var(--gold); }
+  .skill-badge {
+    min-width: 26px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: white;
+    border-radius: 6px;
+    padding: 3px 6px;
+  }
+  .remove-player-btn {
+    border: none;
+    background: transparent;
+    color: #b3261e;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+  .skill-hint { font-size: 0.78rem; color: #8a8a8a; margin-top: 8px; }
+
+  /* Scoring tab */
+  .score-court {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--court-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .score-court .label { font-size: 0.75rem; font-weight: 700; color: #7c8a85; text-transform: uppercase; margin-bottom: 8px; }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .score-row .team-name { flex: 1; font-size: 0.92rem; font-weight: 600; }
+  .score-row input {
+    width: 64px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .score-row input.invalid { border-color: #b3261e; background: #fdecea; }
+  .score-note { font-size: 0.8rem; color: #8a8a8a; margin-top: 4px; }
+  .match-finish-btn {
+    width: 100%;
+    margin-top: 6px;
+    background: var(--court-green);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .match-score-error {
+    color: #b3261e;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: none;
+  }
+  .pairing-court-block { margin-bottom: 14px; }
+  .pairing-court-block .court { margin-bottom: 0; border-radius: 10px 10px 0 0; border-bottom: none; }
+  .pairing-court-block .score-court { border-radius: 0 0 10px 10px; margin-bottom: 0; border-top: 1px dashed var(--border); }
+  .match-collapsed-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #eef5f0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--court-green);
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  .match-collapsed-btn .mc-final { color: var(--ink); font-weight: 800; }
+  .match-collapsed-btn .mc-caret { opacity: 0.6; font-weight: 400; }
+  .match-finished-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #eef5f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--court-green);
+  }
+  .match-edit-link {
+    background: none;
+    border: none;
+    color: #5c6b66;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  /* Leaderboard tab */
+  table.leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  table.leaderboard th, table.leaderboard td {
+    padding: 9px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  table.leaderboard th {
+    color: #5c6b66;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+  table.leaderboard td.name { text-align: left; font-weight: 600; }
+  .rank-badge {
+    display: inline-flex;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: white;
+  }
+  .rank-1 { background: var(--gold); }
+  .rank-2 { background: var(--silver); }
+  .rank-3 { background: var(--bronze); }
+  .rank-other { background: #c4cbc7; color: #445; }
+
+  /* Games-per-player section */
+  .count-chip {
+    display: inline-block;
+    min-width: 22px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: white;
+  }
+  .count-chip.finished { background: var(--skill-high); }
+  .count-chip.ongoing { background: var(--skill-mid); color: #4a3b00; }
+  .count-chip.upcoming { background: #9aa0a6; }
+  table.leaderboard th.gc-total, table.leaderboard td.gc-total { font-weight: 800; }
+
+  /* Live scoring - multi court */
+  .court-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    margin-bottom: 14px;
+    scrollbar-width: thin;
+  }
+  .court-tab {
+    flex: 0 0 auto;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 7px 12px;
+    cursor: pointer;
+    text-align: left;
+    min-width: 92px;
+  }
+  .court-tab .tab-label { font-size: 0.66rem; font-weight: 700; color: #7c8a85; text-transform: uppercase; }
+  .court-tab .tab-score { font-size: 0.95rem; font-weight: 800; margin-top: 2px; color: var(--court-green); }
+  .court-tab .tab-serve { font-size: 0.64rem; font-weight: 700; margin-top: 1px; color: #7c8a85; }
+  .court-tab.active {
+    border-color: var(--court-green);
+    background: var(--court-green);
+  }
+  .court-tab.active .tab-label { color: rgba(255,255,255,0.8); }
+  .court-tab.active .tab-score { color: white; }
+  .court-tab.active .tab-serve { color: rgba(255,255,255,0.85); }
+  .court-tab.has-winner .tab-score::after { content: ' 🏆'; }
+
+  .court-card {
+    background: var(--court-green);
+    border-radius: 16px;
+    padding: 18px 16px;
+    color: white;
+    margin-bottom: 16px;
+  }
+  .court-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .court-card-header .ctitle { font-weight: 800; font-size: 0.95rem; }
+  .court-card-header .remove-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    width: 28px; height: 28px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .server-monitor {
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+  }
+  .server-monitor .sm-label { font-weight: 700; }
+  .server-monitor .sm-label .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ball-yellow); margin-right: 6px; vertical-align: middle;
+  }
+  .server-monitor button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .score-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+  .score-block { flex: 1; }
+  .score-block .tname {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    min-height: 1.2em;
+    text-align: center;
+  }
+  .score-block .snum {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+  }
+  .score-block .score-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .score-block button.adj {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.3rem;
+    font-weight: 800;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .score-block button.adj:active { background: rgba(255,255,255,0.3); }
+  .score-divider {
+    font-size: 1.2rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .live-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .live-controls button {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .winner-banner {
+    margin-top: 14px;
+    background: var(--ball-yellow);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .score-call {
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    margin-top: 8px;
+  }
+  .serve-dot {
+    display: inline-block;
+    font-size: 0.9rem;
+    margin-left: 4px;
+  }
+  .server-monitor button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .rally-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .rally-controls button {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 8px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    background: rgba(255,255,255,0.18);
+    color: white;
+  }
+  .rally-controls button:active { background: rgba(255,255,255,0.32); }
+  .live-controls button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .serve-banner {
+    background: rgba(255,255,255,0.14);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  .serve-banner .serve-ball { margin-right: 4px; }
+  .server-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.8rem;
+  }
+  .server-toggle-btns { display: flex; gap: 6px; }
+  .server-toggle-btns button {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .server-toggle-btns button.active {
+    background: var(--ball-yellow);
+    color: var(--ink);
+  }
+  .rally-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.75;
+    margin-top: 12px;
+  }
+  .viewer-note {
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 12px;
+  }
+  .scorekeeper-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #7c8a85;
+    margin: -6px 0 10px;
+  }
+  #startCourtToggleBtn {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  #startCourtForm {
+    margin-bottom: 16px;
+  }
+  .live-toolbar {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+  }
+  .live-toolbar button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .live-toolbar button:hover { opacity: 1; }
+
+  /* Custom confirm modal — used instead of window.confirm(), which mobile
+     browsers commonly block/no-op when this app is added to the home screen
+     or opened inside an in-app browser (Messenger, etc.). */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .confirm-box {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .confirm-message {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 16px;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .confirm-actions button {
+    flex: 1;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+  }
+  .confirm-cancel {
+    background: var(--border);
+    color: var(--ink);
+  }
+  .confirm-ok {
+    background: #e05a3f;
+    color: white;
+  }
+  .confirm-ok.controller-ok {
+    background: var(--court-green);
+  }
+  .role-passcode-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  .role-sub {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+    margin: -10px 0 14px;
+  }
+
+  .pb-icon { display: inline-block; vertical-align: middle; }
+  .landing-logo .pb-icon { width: 2.4rem; height: 2.4rem; }
+  h1 .pb-icon { width: 1.5rem; height: 1.5rem; }
+  .pb-ball-icon { display: inline-block; vertical-align: -2px; width: 14px; height: 14px; }
+
+  /* ---------------- LANDING SCREEN ---------------- */
+  #landingScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .landing-box {
+    max-width: 420px;
+    width: 100%;
+  }
+  .landing-logo {
+    text-align: center;
+    font-size: 2.4rem;
+    margin-bottom: 2px;
+  }
+  .landing-title {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .landing-sub {
+    text-align: center;
+    color: #5c6b66;
+    font-size: 0.88rem;
+    margin-bottom: 22px;
+  }
+  .landing-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .landing-choice-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .landing-choice-btn:active { background: var(--bg); }
+  .landing-choice-title {
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .landing-choice-desc { font-size: 0.82rem; color: #5c6b66; }
+  .landing-back {
+    background: none;
+    border: none;
+    color: var(--court-green);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 0 14px;
+    cursor: pointer;
+  }
+  .landing-code-display {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--court-green);
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .landing-error {
+    color: #c0392b;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-top: 6px;
+    min-height: 1em;
+  }
+  #appRoot { display: none; }
+
+  /* ---------------- ROLE BAR (inside app) ---------------- */
+  .role-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+  .role-bar-label {
+    flex: 1;
+    min-width: 140px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .role-bar-label.admin { color: var(--court-green); }
+  .role-bar-label.viewer { color: #8a6d2c; }
+  .role-bar button {
+    border: none;
+    border-radius: 9px;
+    padding: 7px 10px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--ink);
+  }
+  .viewer-locked-note {
+    font-size: 0.82rem;
+    color: #5c6b66;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <h1>Dorm Repairs &amp; Maintenance</h1>
-    <p>Submit a request or check its status below</p>
-  </div>
-  <div class="tab-bar">
-    <button class="tab active" onclick="switchTab('submit')">Submit</button>
-    <button class="tab" onclick="switchTab('summary')">Summary</button>
-    <button class="tab" onclick="switchTab('board')">Status/Feedback</button>
-    <button class="tab" onclick="switchTab('manager')">Manager</button>
-  </div>
 
-  <!-- SUBMIT -->
-  <div id="tab-submit" class="section">
-    <div class="form-card">
-      <h2>New repair request</h2>
-      <label>Your name</label>
-      <input type="text" id="f-name" placeholder="e.g. Juan dela Cruz">
-      <label>Room / location</label>
-      <input type="text" id="f-room" placeholder="e.g. Room 204, 2nd Floor">
-      <label>Date</label>
-      <input type="date" id="f-date">
-      <label>Describe the issue</label>
-      <textarea id="f-task" placeholder="e.g. Leaking faucet in bathroom, broken window latch..."></textarea>
-      <button class="btn btn-primary" onclick="submitRequest()">Submit request</button>
-    </div>
-  </div>
+<!-- Shared pickleball icon: defined once as a sprite so both the landing
+     logo and the header icon reference the same gradient/shadow definitions
+     without duplicate-id conflicts. Styled to feel closer to a glossy,
+     colorful emoji than a flat line icon — gradients, a glossy highlight on
+     both the paddle and ball, a soft drop shadow, and a slight dynamic tilt. -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+  <defs>
+    <!-- Paddle face: dark charcoal, matching the uploaded Selkirk-style paddle photo -->
+    <linearGradient id="paddleFaceGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#4a4a4d"/>
+      <stop offset="45%" stop-color="#232326"/>
+      <stop offset="100%" stop-color="#0e0e10"/>
+    </linearGradient>
+    <!-- Red diagonal swoosh accent, echoing the paddle's logo swoop -->
+    <linearGradient id="swooshGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b5a"/>
+      <stop offset="50%" stop-color="#e6392c"/>
+      <stop offset="100%" stop-color="#a81f1f"/>
+    </linearGradient>
+    <!-- Silver/white edge guard rim -->
+    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#c7cbce"/>
+    </linearGradient>
+    <linearGradient id="handleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dcdfe2"/>
+    </linearGradient>
+    <!-- Pickleball (yellow), lit from upper-left -->
+    <radialGradient id="ballGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff6c4"/>
+      <stop offset="55%" stop-color="#ffd60a"/>
+      <stop offset="100%" stop-color="#e6ac00"/>
+    </radialGradient>
+    <filter id="pbShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#0b1f18" flood-opacity="0.32"/>
+    </filter>
+  </defs>
 
-  <!-- SUMMARY -->
-  <div id="tab-summary" class="section" style="display:none">
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Total requests</div><div class="stat-val" id="s-total">—</div></div>
-      <div class="stat-card accent filterable" onclick="filterStatus('new')"><div class="stat-label">New</div><div class="stat-val" id="s-new">—</div></div>
-      <div class="stat-card warning filterable" onclick="filterStatus('ongoing')"><div class="stat-label">On going</div><div class="stat-val" id="s-ongoing">—</div></div>
-      <div class="stat-card success filterable" onclick="filterStatus('done')"><div class="stat-label">Completed</div><div class="stat-val" id="s-done">—</div></div>
-    </div>
-    <div class="progress-wrap">
-      <h3>Status breakdown</h3>
-      <div class="prog-row"><div class="prog-label"><span>New</span><span id="p-new-pct">0%</span></div><div class="prog-track"><div class="prog-bar new" id="p-new" style="width:0%"></div></div></div>
-      <div class="prog-row"><div class="prog-label"><span>On going</span><span id="p-ongoing-pct">0%</span></div><div class="prog-track"><div class="prog-bar ongoing" id="p-ongoing" style="width:0%"></div></div></div>
-      <div class="prog-row"><div class="prog-label"><span>Completed</span><span id="p-done-pct">0%</span></div><div class="prog-track"><div class="prog-bar done" id="p-done" style="width:0%"></div></div></div>
-    </div>
-    <div class="recent-wrap" id="s-recent-wrap"><h3>Recent activity</h3><div id="s-recent"><div class="loading">Loading...</div></div></div>
-    <div class="recent-wrap" id="s-filtered" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h3 id="filtered-title">Filtered</h3>
-        <button class="btn btn-sm" onclick="clearFilter()">Clear filter</button>
-      </div>
-      <div id="s-filtered-list"></div>
-    </div>
-  </div>
+  <!-- Full mark: vectorized paddle (from the uploaded photo's colorway) + a proper
+       perforated pickleball, replacing the old tennis-ball-style smooth ball. -->
+  <symbol id="pbIcon" viewBox="0 0 64 64">
+    <g filter="url(#pbShadow)" transform="translate(2,7.5) scale(0.9)">
+      <g transform="rotate(-14 24 26)">
+        <!-- handle with wrap lines -->
+        <rect x="21" y="38" width="13" height="21" rx="5.5" fill="url(#handleGrad)" stroke="#8d9299" stroke-width="1.5"/>
+        <line x1="23.5" y1="43.5" x2="31.5" y2="43.5" stroke="#9aa0a6" stroke-width="1" opacity="0.8"/>
+        <line x1="23.5" y1="48.5" x2="31.5" y2="48.5" stroke="#9aa0a6" stroke-width="1" opacity="0.8"/>
+        <line x1="23.5" y1="53.5" x2="31.5" y2="53.5" stroke="#9aa0a6" stroke-width="1" opacity="0.8"/>
+        <!-- silver edge guard -->
+        <ellipse cx="27.5" cy="20" rx="22.5" ry="25" fill="url(#rimGrad)"/>
+        <!-- charcoal paddle face -->
+        <ellipse cx="27.5" cy="19.5" rx="20" ry="22.5" fill="url(#paddleFaceGrad)" stroke="#000000" stroke-width="1"/>
+        <!-- red diagonal swoosh, echoing the paddle graphic -->
+        <path d="M10 30 C 16 20, 18 12, 13 3 C 22 8, 33 9, 42 3 C 36 12, 34 20, 40 30 C 31 25, 19 25, 10 30 Z" fill="url(#swooshGrad)"/>
+        <ellipse cx="18" cy="8" rx="8" ry="4.5" fill="#ffffff" opacity="0.10"/>
+      </g>
+      <!-- pickleball: solid ball plus punched-through holes (not a smooth tennis ball) -->
+      <circle cx="48" cy="44" r="13.5" fill="url(#ballGrad)" stroke="#b98600" stroke-width="2"/>
+      <ellipse cx="43" cy="38" rx="4.2" ry="2.8" fill="#ffffff" opacity="0.6"/>
+      <g fill="#c98f00" opacity="0.9">
+        <circle cx="44" cy="35.5" r="1.7"/><circle cx="54" cy="36.5" r="1.7"/><circle cx="49.5" cy="41.5" r="1.7"/>
+        <circle cx="40.5" cy="44.5" r="1.7"/><circle cx="57.5" cy="43.5" r="1.7"/><circle cx="45" cy="50.5" r="1.7"/><circle cx="53.5" cy="50.5" r="1.7"/>
+        <circle cx="48.5" cy="32" r="1.7"/><circle cx="59.5" cy="49" r="1.7"/><circle cx="38" cy="37" r="1.7"/>
+      </g>
+    </g>
+  </symbol>
 
-  <!-- BOARD -->
-  <div id="tab-board" class="section" style="display:none">
-    <div id="board-new"><div class="loading">Loading...</div></div>
-    <div id="board-ongoing"></div>
-    <div id="board-done"></div>
-  </div>
+  <!-- Small standalone pickleball (holes only, no paddle) for inline "serving" indicators
+       that previously used the 🎾 tennis-ball emoji. -->
+  <symbol id="pbBallIcon" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="13.5" fill="url(#ballGrad)" stroke="#b98600" stroke-width="1.5"/>
+    <ellipse cx="11.5" cy="10.5" rx="4" ry="2.6" fill="#ffffff" opacity="0.6"/>
+    <g fill="#c98f00" opacity="0.9">
+      <circle cx="12" cy="8" r="1.5"/><circle cx="21" cy="9" r="1.5"/><circle cx="17" cy="14" r="1.5"/>
+      <circle cx="9" cy="16.5" r="1.5"/><circle cx="24.5" cy="15.5" r="1.5"/><circle cx="13" cy="22" r="1.5"/><circle cx="20.5" cy="22.5" r="1.5"/>
+      <circle cx="16.5" cy="5" r="1.5"/><circle cx="6" cy="9.5" r="1.5"/>
+    </g>
+  </symbol>
+</svg>
 
-  <!-- MANAGER -->
-  <div id="tab-manager" class="section" style="display:none">
-    <div id="mgr-login" class="login-wrap">
-      <div class="login-card">
-        <div class="lock-icon"><i class="ti ti-lock"></i></div>
-        <h2>Manager access</h2>
-        <p>Enter your credentials to manage repair requests.</p>
-        <label>Username</label>
-        <input type="text" id="mgr-user" placeholder="Username" autocomplete="off">
-        <label style="margin-top:10px">Password</label>
-        <input type="password" id="mgr-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-        <div id="login-error" class="alert alert-danger" style="display:none;margin-top:10px">Incorrect username or password.</div>
-        <button class="btn btn-primary" style="margin-top:14px" onclick="doLogin()">Log in</button>
+<!-- ============= LANDING SCREEN ============= -->
+<div id="landingScreen">
+  <div class="landing-box">
+    <div class="landing-logo">
+      <svg class="pb-icon" viewBox="0 0 64 64"><use href="#pbIcon"/></svg>
+    </div>
+    <div class="landing-title">PickleVerge</div>
+    <div class="landing-sub">Randomize skill-balanced teams, enter game scores, and run live scoreboards for multiple courts.</div>
+
+    <!-- Step 0: Start or Join -->
+    <div id="landingChoiceStep">
+      <button class="landing-choice-btn" onclick="showStartLeague()">
+        <div class="landing-choice-title">🏆 Start a League</div>
+        <div class="landing-choice-desc">Get a new league code and set an organizer password so you're in control.</div>
+      </button>
+      <button class="landing-choice-btn" onclick="showJoinLeague()">
+        <div class="landing-choice-title">🔑 Join a League</div>
+        <div class="landing-choice-desc">Enter a code someone shared with you. Add their password for admin access, or continue as a viewer.</div>
+      </button>
+    </div>
+
+    <!-- Step 1a: Start a League -->
+    <div id="landingStartStep" style="display:none;">
+      <button class="landing-back" onclick="showLandingChoice()">← Back</button>
+      <div class="landing-card">
+        <label>Your new league code</label>
+        <div class="landing-code-display" id="landingNewCode">------</div>
+        <div class="row" style="margin-top:0;">
+          <div>
+            <label>League name <span style="font-weight:400;color:#8a8a8a;">(shown to everyone)</span></label>
+            <input type="text" id="landingLeagueName" placeholder="e.g. Sunday Pickleball League" autocomplete="off">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Your name <span style="font-weight:400;color:#8a8a8a;">(shown to everyone)</span></label>
+            <input type="text" id="landingOrganizerName" placeholder="e.g. Juan" autocomplete="name">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Set an organizer password</label>
+            <input type="password" id="landingOrganizerPass" placeholder="4+ characters" autocomplete="off">
+          </div>
+        </div>
+        <div class="score-note">Anyone with this password can add/remove players, generate pairings, and run live courts. Share the league code freely — only share the password with people you want as admins.</div>
+        <div class="landing-error" id="landingStartError"></div>
+        <button class="primary" onclick="submitStartLeague()">Start League →</button>
       </div>
     </div>
-    <div id="mgr-panel" style="display:none">
-      <div class="logout-row">
-        <span><i class="ti ti-shield-check" style="color:#3b6d11"></i> Logged in as manager</span>
-        <button class="btn btn-sm" onclick="doLogout()">Log out</button>
+
+    <!-- Step 1b: Join a League -->
+    <div id="landingJoinCodeStep" style="display:none;">
+      <button class="landing-back" onclick="showLandingChoice()">← Back</button>
+      <div class="landing-card">
+        <label>League code</label>
+        <input type="text" id="landingJoinCodeInput" placeholder="e.g. K7QX2" style="text-transform:uppercase;font-weight:800;letter-spacing:1px;">
+        <div class="landing-error" id="landingJoinCodeError"></div>
+        <button class="primary" onclick="submitJoinCode()">Continue →</button>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="enableDesktopNotif()"><i class="ti ti-bell"></i> <span id="notif-btn-label">Enable desktop alerts</span></button>
-        <button class="btn btn-sm" onclick="toggleEmailNotif()"><i class="ti ti-mail"></i> <span id="email-btn-label">Enable email alerts</span></button>
-        <button class="btn btn-sm" onclick="testTelegramNotif()"><i class="ti ti-send"></i> <span id="telegram-btn-label">Telegram: checking...</span></button>
-        <button class="btn btn-sm" onclick="testTextbeltNotif()"><i class="ti ti-message"></i> Test SMS (Textbelt)</button>
+    </div>
+
+    <!-- Step 2: Join — password or viewer -->
+    <div id="landingJoinAuthStep" style="display:none;">
+      <button class="landing-back" onclick="showJoinLeague()">← Back</button>
+      <div class="landing-card">
+        <label>League code</label>
+        <div class="landing-code-display" id="landingJoinAuthCode">------</div>
+        <div id="landingBootstrapNote" class="score-note" style="display:none;">This code hasn't been set up yet. Set a password now to become its organizer, or continue without one to leave it open.</div>
+        <label>Organizer password <span style="font-weight:400;color:#8a8a8a;">(optional — leave blank to join as a viewer)</span></label>
+        <input type="password" id="landingJoinPass" placeholder="Password" autocomplete="off">
+        <div class="landing-error" id="landingJoinAuthError"></div>
+        <div class="row" style="margin-top:14px;">
+          <button class="secondary" style="margin-top:0;" onclick="submitJoinAsViewer()">👁 Continue as Viewer</button>
+          <button class="primary" style="margin-top:0;" onclick="submitJoinWithPassword()">🔑 Enter with Password</button>
+        </div>
       </div>
-      <div class="alert alert-warning">Move requests between statuses and add remarks visible to everyone.</div>
-      <div id="mgr-board"><div class="loading">Loading...</div></div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- ============= MAIN APP ============= -->
+<div id="appRoot">
+<div class="wrap">
+  <div class="card role-bar" id="roleBar">
+    <div class="role-bar-label" id="roleBarLabel"></div>
+    <button id="requestAdminBtn" onclick="openAdminRequest()" style="display:none;">🔑 Admin Access</button>
+    <button onclick="leaveLeague()">Switch League</button>
+  </div>
+  <h1>
+    <svg class="pb-icon" viewBox="0 0 64 64"><use href="#pbIcon"/></svg>
+    PickleVerge: Pairing &amp; Scoring
+  </h1>
+  <div class="subtitle" id="leagueNameDisplay" style="display:none;font-weight:700;color:var(--court-green);"></div>
+  <div class="subtitle">Randomize skill-balanced teams, enter game scores, and run live scoreboards for multiple courts.</div>
+  <div class="subtitle" id="syncBanner" style="color:var(--court-green);font-weight:700;"></div>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="pairing" onclick="switchTab('pairing')">Pairing</button>
+    <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">Leaderboard</button>
+    <button class="tab-btn" data-tab="live" onclick="switchTab('live')">Live Score</button>
+  </div>
 
-  const ARCHIVE_AFTER_DAYS = 15;
-  const ARCHIVE_AFTER_MS = ARCHIVE_AFTER_DAYS * 24 * 60 * 60 * 1000;
+  <!-- PAIRING TAB -->
+  <div class="tab-panel active" id="tab-pairing">
+    <button class="primary" id="pairingSetupToggleBtn" onclick="togglePairingSetup()" style="display:none;">– Hide Setup</button>
 
-  // ── MANAGER CREDENTIALS — change these ──
-  const MGR_USERNAME = 'admin';
-  const MGR_PASSWORD = 'dorm1234';
-  // ─────────────────────────────────────────
+    <div class="viewer-locked-note" id="pairingLockedBanner" style="display:none;">👁 You're viewing as a guest — only the organizer (or someone with the admin password) can add/remove players or regenerate pairings. <button onclick="openAdminRequest()" style="margin-top:6px;">🔑 Enter Admin Password</button></div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDwNsww4Z2989Ycsprp_NKhpaa1NXBjD1c",
-    authDomain: "dorm-request.firebaseapp.com",
-    projectId: "dorm-request",
-    storageBucket: "dorm-request.firebasestorage.app",
-    messagingSenderId: "62850630907",
-    appId: "1:62850630907:web:491742435248c87fb51c5e"
-  };
+    <div class="card" id="pairingSetupForm">
+      <label>Mode</label>
+      <select id="pairingMode">
+        <option value="doubles" selected>Doubles (2v2)</option>
+        <option value="singles">Singles (1v1)</option>
+      </select>
+      <div class="skill-hint">Choose the format first — it decides how players are grouped onto each court before pairings are generated.</div>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const col = collection(db, 'requests');
+      <label style="margin-top:14px;">Players<span class="count-pill" id="countPill">0</span></label>
+      <div class="skill-list" id="skillList"></div>
+      <div class="row" style="margin-top:12px;">
+        <button class="secondary" onclick="addPlayer()" style="margin-top:0;">+ Add Player</button>
+        <button class="secondary" onclick="clearAllPlayers()" style="margin-top:0;">🗑 Remove All Players</button>
+      </div>
+      <div class="skill-hint">Type each name once here and set their skill level (1 = beginner, 10 = advanced) — no separate list to keep in sync. Courts are balanced so both teams have a similar total skill.</div>
 
-  let requests = [];
-  let loggedIn = false;
-  let currentTab = 'submit';
-  let activeFilter = null;
-  let mgrView = 'active'; // 'active' | 'archived'
-  let expandedIds = new Set();
+      <div class="row">
+        <div>
+          <label>Rounds</label>
+          <input type="number" id="rounds" value="4" min="1" max="20">
+        </div>
+        <div>
+          <label>Number of courts</label>
+          <input type="number" id="numCourts" value="2" min="1">
+        </div>
+      </div>
+      <div class="score-note">You can add players any time, even mid-tournament — regenerating only reshuffles rounds that haven't been fully scored yet. Rounds that are already finished (and their scores) are never touched, so the leaderboard stays accurate.</div>
+      <button class="primary" id="generateBtn" onclick="generate()">Generate Balanced Pairings</button>
+      <button class="secondary" onclick="clearSchedule()">Clear Saved Schedule &amp; Scores</button>
+      <div class="error" id="errorMsg"></div>
+    </div>
+    <div id="pairingOutput"></div>
+  </div>
 
-  window.toggleExpand = function(id) {
-    if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
-    renderSummary();
-    renderBoard();
-  };
+  <!-- LEADERBOARD TAB -->
+  <div class="tab-panel" id="tab-leaderboard">
+    <div id="gameCountsOutput"></div>
+    <div id="leaderboardOutput"></div>
+  </div>
 
-  window.filterStatus = function(status) {
-    activeFilter = status;
-    renderSummary();
-  };
+  <!-- LIVE SCORE TAB -->
+  <div class="tab-panel" id="tab-live">
+    <div class="skill-hint" style="margin-bottom:12px;">Only admins can start and control courts — everyone else sharing this league code sees a live, view-only scoreboard.</div>
+    <div class="viewer-locked-note" id="liveLockedBanner" style="display:none;">👁 You're viewing as a guest — only admins can start or control courts. <button onclick="openAdminRequest()" style="margin-top:6px;">🔑 Enter Admin Password</button></div>
+    <button class="primary" id="startCourtToggleBtn" onclick="toggleStartForm()">+ Start New Court</button>
 
-  window.clearFilter = function() {
-    activeFilter = null;
-    renderSummary();
-  };
+    <div class="card" id="startCourtForm">
+      <div class="row" style="margin-top:0;">
+        <div>
+          <label>Team A name</label>
+          <input type="text" id="teamAName" placeholder="Team A" value="Team A">
+        </div>
+        <div>
+          <label>Team B name</label>
+          <input type="text" id="teamBName" placeholder="Team B" value="Team B">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Format</label>
+          <select id="gameType">
+            <option value="doubles" selected>Doubles</option>
+            <option value="singles">Singles</option>
+          </select>
+        </div>
+        <div>
+          <label>Win score</label>
+          <input type="number" id="winScore" value="11" min="1" list="winScoreOptions">
+          <datalist id="winScoreOptions">
+            <option value="11"><option value="15"><option value="21">
+          </datalist>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>First serve</label>
+          <select id="startingServer">
+            <option value="A" selected id="startServerAOpt">Team A</option>
+            <option value="B" id="startServerBOpt">Team B</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:6px;margin-top:10px;">
+            <input type="checkbox" id="winBy2" checked style="width:auto;"> Win by 2
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Your name <span style="font-weight:400;color:#8a8a8a;">(shown to viewers)</span></label>
+          <input type="text" id="scorekeeperName" placeholder="e.g. Juan" autocomplete="name">
+        </div>
+      </div>
+      <div class="score-note">Official rules: only the serving side can score. In doubles, a side keeps serving until it loses two rallies (side out) — except the very first serve of the game, which is a single serve for the starting side.</div>
+      <div class="score-note">Any admin can control any court — no separate passcode needed per court.</div>
+      <button class="primary" onclick="startCourt()">Start This Court</button>
+    </div>
 
-  // ── NOTIFICATION CONFIG ──────────────────────────────────
-  // EmailJS: sign up free at https://www.emailjs.com, create a Gmail service
-  // + a template with variables {{name}} {{room}} {{date}} {{task}}, then paste
-  // the three IDs below. Leave as-is to keep email alerts disabled.
-  const EMAILJS_PUBLIC_KEY  = 'Aiypm5_L1_57WmSbG';
-  const EMAILJS_SERVICE_ID  = 'service_kjv5sza';
-  const EMAILJS_TEMPLATE_ID = 'template_rxaoqex';
-  const NOTIFY_EMAIL        = 'pdmuvirj@gmail.com';
-  // ─────────────────────────────────────────────────────────
+    <div class="live-toolbar">
+      <button onclick="manualRefreshLive()">🔄 Refresh</button>
+      <button onclick="clearAllLiveCourts()">🗑 Clear All Courts</button>
+    </div>
+    <div id="courtTabs" class="court-tabs"></div>
+    <div id="liveCourts"></div>
+  </div>
+</div>
+</div><!-- /#appRoot -->
 
-  // ── TELEGRAM NOTIFICATION CONFIG ────────────────────────────
-  const TELEGRAM_BOT_TOKEN = '7550164208:AAEWrIv8LrpnMuNIY0T56LlUlY21zCHJS6g';
-  const TELEGRAM_CHAT_ID   = '6988301529';
-  // ─────────────────────────────────────────────────────────
+<div id="confirmOverlay" class="confirm-overlay">
+  <div class="confirm-box">
+    <div id="confirmMessage" class="confirm-message"></div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="resolveConfirm(false)">Cancel</button>
+      <button class="confirm-ok" onclick="resolveConfirm(true)">Remove</button>
+    </div>
+  </div>
+</div>
 
-  // ── TEXTBELT (FREE SMS FALLBACK) CONFIG ─────────────────────
-  // Free tier: 1 SMS per day, no signup. Used as a once-daily backup
-  // alongside Telegram/email — not meant as the primary channel.
-  const TEXTBELT_PHONE = '+639383824402';
-  const TEXTBELT_STORAGE_KEY = 'textbeltLastSentDate';
-  // ─────────────────────────────────────────────────────────
+<!-- Admin request modal — lets a viewer enter the organizer password at any
+     time (from the role bar) to upgrade to admin on this device. -->
+<div id="adminRequestOverlay" class="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-message">Enter this league's organizer password to get admin access on this device.</div>
+    <input type="password" id="adminRequestInput" class="role-passcode-input" placeholder="Password" autocomplete="off">
+    <div class="error" id="adminRequestError"></div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeAdminRequest()">Cancel</button>
+      <button class="confirm-ok controller-ok" onclick="submitAdminRequest()">Unlock</button>
+    </div>
+  </div>
+</div>
 
-  const emailReady = () =>
-    window.emailjs &&
-    EMAILJS_PUBLIC_KEY  && !EMAILJS_PUBLIC_KEY.startsWith('YOUR_') &&
-    EMAILJS_SERVICE_ID  && !EMAILJS_SERVICE_ID.startsWith('YOUR_') &&
-    EMAILJS_TEMPLATE_ID && !EMAILJS_TEMPLATE_ID.startsWith('YOUR_');
+<!-- Firebase (Firestore) — replaces the Claude-only window.storage API so this
+     app can be hosted anywhere and still sync across devices. Fill in
+     firebaseConfig further down in the script below. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-  if (emailReady()) { try { window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e){} }
+<script>
+// ---------------- SHARED STATE ----------------
 
-  let emailAlertsOn = localStorage.getItem('emailAlertsOn') === '1';
-  let firstSnapshot = true;
-  const seenIds = new Set();
+// Custom confirm modal — window.confirm() is silently blocked or a no-op in
+// several contexts this app actually gets used in (added to the home screen
+// as a standalone app, opened inside the Messenger/Facebook in-app browser,
+// etc.), which made destructive actions like "Remove All Players" appear to
+// do nothing. This always works because it's just DOM, not a native dialog.
+let _confirmResolver = null;
+function appConfirm(message) {
+  return new Promise(resolve => {
+    _confirmResolver = resolve;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmOverlay').style.display = 'flex';
+  });
+}
+function resolveConfirm(result) {
+  document.getElementById('confirmOverlay').style.display = 'none';
+  if (_confirmResolver) { _confirmResolver(result); _confirmResolver = null; }
+}
 
-  const telegramReady = () =>
-    TELEGRAM_BOT_TOKEN && !TELEGRAM_BOT_TOKEN.startsWith('YOUR_') &&
-    TELEGRAM_CHAT_ID && !TELEGRAM_CHAT_ID.startsWith('YOUR_');
+let matchRounds = []; // [{roundNum, courts:[{courtNumber,type,teamA,teamB,players,scoreA,scoreB,finished}]}]
+// Tracks which finished matches are currently expanded (shown in full) rather
+// than collapsed to their one-line summary button. Keyed by "round-court".
+let expandedFinishedCourts = new Set();
+let roster = []; // [{id, name, skill}] — single source of truth for players and their skill
+let rosterIdCounter = 1;
 
-  function refreshNotifButtons() {
-    const nb = document.getElementById('notif-btn-label');
-    if (nb) {
-      if (!('Notification' in window)) nb.textContent = 'Desktop alerts unsupported';
-      else if (Notification.permission === 'granted') nb.textContent = 'Desktop alerts on';
-      else if (Notification.permission === 'denied')  nb.textContent = 'Desktop alerts blocked';
-      else nb.textContent = 'Enable desktop alerts';
-    }
-    const eb = document.getElementById('email-btn-label');
-    if (eb) {
-      if (!emailReady()) eb.textContent = 'Email: add EmailJS keys';
-      else eb.textContent = emailAlertsOn ? 'Email alerts on' : 'Enable email alerts';
-    }
-    const tb = document.getElementById('telegram-btn-label');
-    if (tb) {
-      tb.textContent = telegramReady() ? 'Telegram: configured (tap to test)' : 'Telegram: not configured';
-    }
+// Setup card collapses after a schedule is generated, so the pairing output
+// stays front and center — but stays one tap away in case someone wants to
+// add a late player and regenerate.
+let pairingSetupOpen = true;
+
+// ---------------- ADMIN / VIEWER ROLE ----------------
+// Each league has a single organizer password (set once when the league is
+// started, or bootstrapped by the first person to join an empty code).
+// Anyone who enters it correctly becomes an admin on THIS device and can
+// add/remove players, generate pairings, and run live courts. Everyone else
+// is a read-only viewer. Only the password's HASH is ever stored (shared,
+// in the league's own record); a device that entered it correctly remembers
+// that hash locally so it doesn't have to re-enter it every time.
+let orgPassHash = null;    // hash protecting this league (null = no password set yet)
+let organizerName = '';    // shown in the role bar
+let isAdmin = false;       // whether THIS device currently has admin access — SECURE DEFAULT: nobody
+                            // is admin until the landing flow (or a stored password match) proves it.
+let joinedAsViewer = false; // true once the person has explicitly chosen "Continue as Viewer" for
+                            // this session — this must never be silently upgraded to admin.
+
+function togglePairingSetup() {
+  pairingSetupOpen = !pairingSetupOpen;
+  applyPairingSetupVisibility();
+}
+function applyPairingSetupVisibility() {
+  const form = document.getElementById('pairingSetupForm');
+  const btn = document.getElementById('pairingSetupToggleBtn');
+  const lockedBanner = document.getElementById('pairingLockedBanner');
+  if (!form || !btn) return;
+
+  if (!isAdmin) {
+    // Viewer — hide the whole setup form (and its toggle) and show a
+    // read-only banner with a way to request admin access instead.
+    form.style.display = 'none';
+    btn.style.display = 'none';
+    if (lockedBanner) lockedBanner.style.display = 'block';
+    return;
   }
 
-  window.enableDesktopNotif = async function() {
-    if (!('Notification' in window)) { toast('This browser does not support notifications.'); return; }
-    if (Notification.permission === 'granted') { toast('Desktop alerts already on.'); return; }
-    const perm = await Notification.requestPermission();
-    if (perm === 'granted') { toast('Desktop alerts enabled.'); new Notification('Dorm Repairs', { body: 'You will be notified of new requests.' }); }
-    else toast('Permission denied.');
-    refreshNotifButtons();
-  };
+  if (lockedBanner) lockedBanner.style.display = 'none';
+  form.style.display = pairingSetupOpen ? 'block' : 'none';
+  btn.style.display = matchRounds.length ? 'block' : 'none'; // no need for a toggle before anything's been generated
+  btn.textContent = pairingSetupOpen ? '– Hide Setup' : '+ Add Players / Edit Setup';
+  const genBtn = document.getElementById('generateBtn');
+  if (genBtn) genBtn.textContent = matchRounds.length ? 'Update Pairings (adds new players to upcoming rounds)' : 'Generate Balanced Pairings';
+}
 
-  window.toggleEmailNotif = function() {
-    if (!emailReady()) { toast('Add your EmailJS keys in the code first.'); return; }
-    emailAlertsOn = !emailAlertsOn;
-    localStorage.setItem('emailAlertsOn', emailAlertsOn ? '1' : '0');
-    toast(emailAlertsOn ? 'Email alerts on.' : 'Email alerts off.');
-    refreshNotifButtons();
-  };
-
-  function fireDesktopNotif(r) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    try {
-      new Notification('New repair request', {
-        body: `${r.task}\n${r.name}${r.room ? ' · ' + r.room : ''}`,
-        tag: 'req-' + r.id,
-      });
-    } catch(e) {}
+// ---- Role bar (always visible) ----
+function updateRoleBar() {
+  const label = document.getElementById('roleBarLabel');
+  const btn = document.getElementById('requestAdminBtn');
+  if (!label) return;
+  if (isAdmin) {
+    label.className = 'role-bar-label admin';
+    label.textContent = organizerName ? `🏆 Admin access — ${organizerName}'s league` : '🏆 You have admin access';
+    if (btn) btn.style.display = 'none';
+  } else {
+    label.className = 'role-bar-label viewer';
+    label.textContent = '👁 Viewing only';
+    if (btn) btn.style.display = orgPassHash ? 'inline-block' : 'none';
   }
+  const liveLockedBanner = document.getElementById('liveLockedBanner');
+  const startBtn = document.getElementById('startCourtToggleBtn');
+  if (liveLockedBanner) liveLockedBanner.style.display = isAdmin ? 'none' : 'block';
+  if (startBtn) startBtn.style.display = isAdmin ? 'block' : 'none';
+}
 
-  function fireEmailNotif(r) {
-    if (!emailAlertsOn || !emailReady()) return;
-    window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: NOTIFY_EMAIL,
-      name: r.name || '',
-      room: r.room || '',
-      date: r.date || '',
-      task: r.task || '',
-    }).catch(err => console.warn('EmailJS error:', err));
+// ---- Admin request modal (viewer entering the password later) ----
+function openAdminRequest() {
+  document.getElementById('adminRequestInput').value = '';
+  document.getElementById('adminRequestError').textContent = '';
+  document.getElementById('adminRequestOverlay').style.display = 'flex';
+  document.getElementById('adminRequestInput').focus();
+}
+function closeAdminRequest() {
+  document.getElementById('adminRequestOverlay').style.display = 'none';
+}
+async function submitAdminRequest() {
+  const passcode = document.getElementById('adminRequestInput').value;
+  const errorEl = document.getElementById('adminRequestError');
+  if (!passcode) { errorEl.textContent = 'Enter the password.'; return; }
+  const hash = await hashPasscode(passcode);
+  if (!orgPassHash || hash !== orgPassHash) {
+    errorEl.textContent = 'Incorrect password.';
+    return;
   }
+  isAdmin = true;
+  joinedAsViewer = false;
+  await storSetPersonal('adminHash', orgPassHash);
+  closeAdminRequest();
+  updateRoleBar();
+  applyPairingSetupVisibility();
+  renderLiveTab();
+}
 
-  function sendTelegramMessage(text) {
-    if (!telegramReady()) {
-      console.warn('Telegram not configured — missing bot token or chat ID.');
-      return Promise.resolve({ ok: false, reason: 'not_configured' });
+function leaveLeague() {
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('landingScreen').style.display = 'flex';
+  isAdmin = false;
+  joinedAsViewer = false;
+  showLandingChoice();
+}
+
+// ---------------- LEAGUES (multi-tenant isolation) ----------------
+// Every league gets its own code. All storage keys are prefixed with that
+// code, so two people can run two completely separate leagues (different
+// rosters, schedules, scores, live courts) at the very same time just by
+// using different codes — no accounts needed.
+let leagueCode = '';
+let leagueName = '';
+
+function updateLeagueNameDisplay() {
+  const el = document.getElementById('leagueNameDisplay');
+  if (!el) return;
+  if (!leagueCode) { el.style.display = 'none'; return; }
+  el.textContent = leagueName ? `🏆 ${leagueName} : ${leagueCode}` : `🏆 League Code: ${leagueCode}`;
+  el.style.display = 'block';
+}
+
+function generateLeagueCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars (0/O, 1/I)
+  let s = '';
+  for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+// Enters the app proper for a given league code, with orgPassHash/organizerName/
+// isAdmin already decided by the landing flow that called this.
+async function enterLeague(newCode) {
+  leagueCode = (newCode || '').trim().toUpperCase();
+
+  // Keep the URL in sync so the address bar itself is a shareable link
+  // straight into this league (e.g. https://yoursite.com/?league=K7QX2).
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('league', leagueCode);
+    history.replaceState({}, '', url);
+  } catch (e) { /* URL API unavailable in some embedded contexts — non-fatal */ }
+
+  // reset local state before loading whatever this league already has saved
+  roster = defaultRoster();
+  matchRounds = [];
+  liveGames = [];
+  expandedFinishedCourts = new Set();
+  pairingSetupOpen = true;
+  applyPairingSetupVisibility();
+  updateRoleBar();
+  updateLeagueNameDisplay();
+  renderSkillList();
+  document.getElementById('pairingOutput').innerHTML = '';
+  document.getElementById('leaderboardOutput').innerHTML = '';
+  renderLiveTab();
+
+  document.getElementById('landingScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+
+  await initFromStorage();
+}
+
+// ---------------- LANDING FLOW ----------------
+function showLandingChoice() {
+  document.getElementById('landingChoiceStep').style.display = 'block';
+  document.getElementById('landingStartStep').style.display = 'none';
+  document.getElementById('landingJoinCodeStep').style.display = 'none';
+  document.getElementById('landingJoinAuthStep').style.display = 'none';
+}
+function showStartLeague() {
+  document.getElementById('landingChoiceStep').style.display = 'none';
+  document.getElementById('landingStartStep').style.display = 'block';
+  document.getElementById('landingJoinCodeStep').style.display = 'none';
+  document.getElementById('landingJoinAuthStep').style.display = 'none';
+  document.getElementById('landingNewCode').textContent = generateLeagueCode();
+  document.getElementById('landingStartError').textContent = '';
+  document.getElementById('landingLeagueName').value = '';
+  document.getElementById('landingOrganizerName').value = '';
+  document.getElementById('landingOrganizerPass').value = '';
+}
+function showJoinLeague() {
+  document.getElementById('landingChoiceStep').style.display = 'none';
+  document.getElementById('landingStartStep').style.display = 'none';
+  document.getElementById('landingJoinCodeStep').style.display = 'block';
+  document.getElementById('landingJoinAuthStep').style.display = 'none';
+  document.getElementById('landingJoinCodeInput').value = '';
+  document.getElementById('landingJoinCodeError').textContent = '';
+}
+
+async function submitStartLeague() {
+  const errorEl = document.getElementById('landingStartError');
+  const lName = document.getElementById('landingLeagueName').value.trim();
+  const name = document.getElementById('landingOrganizerName').value.trim();
+  const pass = document.getElementById('landingOrganizerPass').value;
+  if (pass.length < 4) { errorEl.textContent = 'Password must be at least 4 characters.'; return; }
+  const code = document.getElementById('landingNewCode').textContent;
+  leagueCode = code; // scope storage calls below to this league
+  const hash = await hashPasscode(pass);
+  orgPassHash = hash;
+  organizerName = name;
+  leagueName = lName;
+  isAdmin = true;
+  joinedAsViewer = false;
+  if (storageAvailable) await storSet('league', { orgPassHash: hash, organizerName: name, leagueName: lName });
+  await storSetPersonal('adminHash', hash);
+  await enterLeague(code);
+}
+
+let _pendingJoinCode = '';
+async function submitJoinCode() {
+  const errorEl = document.getElementById('landingJoinCodeError');
+  const code = document.getElementById('landingJoinCodeInput').value.trim().toUpperCase();
+  if (!code) { errorEl.textContent = 'Enter a league code.'; return; }
+  await goToJoinAuth(code);
+}
+
+async function goToJoinAuth(code) {
+  _pendingJoinCode = code;
+  document.getElementById('landingChoiceStep').style.display = 'none';
+  document.getElementById('landingStartStep').style.display = 'none';
+  document.getElementById('landingJoinCodeStep').style.display = 'none';
+  document.getElementById('landingJoinAuthStep').style.display = 'block';
+  document.getElementById('landingJoinAuthCode').textContent = code;
+  document.getElementById('landingJoinPass').value = '';
+  document.getElementById('landingJoinAuthError').textContent = '';
+  document.getElementById('landingBootstrapNote').style.display = 'none';
+
+  // Peek at whether this code already has a password set, so we can explain
+  // the "become the organizer" path if it's a brand new code.
+  if (storageAvailable) {
+    leagueCode = code; // scope storGet to this league
+    const league = await storGet('league');
+    if (!league || !league.orgPassHash) {
+      document.getElementById('landingBootstrapNote').style.display = 'block';
     }
-    return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
-    })
-      .then(async res => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.ok) {
-          console.error('Telegram send failed:', res.status, data);
-          return { ok: false, status: res.status, data };
-        }
-        console.log('Telegram notification sent.');
-        return { ok: true, data };
-      })
-      .catch(err => {
-        console.error('Telegram network error:', err);
-        return { ok: false, reason: 'network_error', err };
-      });
+  }
+}
+
+async function submitJoinAsViewer() {
+  isAdmin = false;
+  joinedAsViewer = true; // explicit choice — initFromStorage must not silently override this
+  orgPassHash = null;
+  organizerName = '';
+  leagueName = '';
+  await enterLeague(_pendingJoinCode);
+}
+
+async function submitJoinWithPassword() {
+  const errorEl = document.getElementById('landingJoinAuthError');
+  const pass = document.getElementById('landingJoinPass').value;
+  const code = _pendingJoinCode;
+  leagueCode = code;
+  const league = storageAvailable ? await storGet('league') : null;
+
+  if (!league || !league.orgPassHash) {
+    // Nobody has set a password for this code yet — bootstrap it.
+    if (!pass) { await submitJoinAsViewer(); return; }
+    if (pass.length < 4) { errorEl.textContent = 'Password must be at least 4 characters.'; return; }
+    const hash = await hashPasscode(pass);
+    orgPassHash = hash;
+    organizerName = '';
+    leagueName = '';
+    isAdmin = true;
+    joinedAsViewer = false;
+    if (storageAvailable) await storSet('league', { orgPassHash: hash, organizerName: '' });
+    await storSetPersonal('adminHash', hash);
+    await enterLeague(code);
+    return;
   }
 
-  function fireTelegramNotif(r) {
-    const text =
-      `🔧 New Repair Request\n\n` +
-      `👤 Name: ${r.name || 'N/A'}\n` +
-      `🏠 Room: ${r.room || 'N/A'}\n` +
-      `📅 Date: ${formatDate(r.date) || r.date || 'N/A'}\n` +
-      `📝 Issue: ${r.task || 'N/A'}\n` +
-      `📌 Status: New`;
-    sendTelegramMessage(text).then(res => {
-      if (!res.ok) toast('Telegram alert failed — check console.');
+  if (!pass) { errorEl.textContent = 'Enter the password, or continue as a viewer.'; return; }
+  const hash = await hashPasscode(pass);
+  if (hash !== league.orgPassHash) { errorEl.textContent = 'Incorrect password.'; return; }
+  orgPassHash = hash;
+  organizerName = league.organizerName || '';
+  leagueName = league.leagueName || '';
+  isAdmin = true;
+  joinedAsViewer = false;
+  await storSetPersonal('adminHash', hash);
+  await enterLeague(code);
+}
+
+// ---------------- FIREBASE (Firestore) ----------------
+// Replace window.storage (a Claude-only API) so this app can be hosted
+// anywhere — GitHub Pages, Netlify, your own server, wherever — and still
+// sync live scores and pairings across everyone's devices in real time.
+//
+// SETUP:
+//   1. Create a free project at https://console.firebase.google.com
+//   2. Build > Firestore Database > Create database (start in test mode,
+//      then apply the security rules note below before real use).
+//   3. Project settings (gear icon) > General > "Your apps" > Web app (</>)
+//      > copy the firebaseConfig object it gives you into the object below.
+//
+// SECURITY RULES (Firestore > Rules) — this app has no login system by
+// design (a league code is the only "access control"), so rules just scope
+// reads/writes to the leagues collection. Anyone who has your Firebase
+// config (which is not a secret — it's meant to be public in client code)
+// and guesses a league code could read/write that league's data, same as
+// the original Claude-hosted version. For a private event, use a long
+// random league code and don't publish it beyond your players:
+//
+//   rules_version = '2';
+//   service cloud.firestore {
+//     match /databases/{database}/documents {
+//       match /leagues/{leagueCode}/items/{item} {
+//         allow read, write: if true;
+//       }
+//     }
+//   }
+const firebaseConfig = {
+  apiKey: "AIzaSyCJb1xfvYSyE7DwM03Eb6yNw4G2iepN60c",
+  authDomain: "pickle-verge.firebaseapp.com",
+  projectId: "pickle-verge",
+  storageBucket: "pickle-verge.firebasestorage.app",
+  messagingSenderId: "716293572588",
+  appId: "1:716293572588:web:914afb11eb3cba2090a2c9"
+};
+
+let db = null;
+let storageAvailable = false;
+try {
+  if (typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    storageAvailable = true;
+  }
+} catch (e) {
+  console.error('Firebase init failed', e);
+}
+
+// ---------------- PERSISTENCE ----------------
+// Every court/game is saved under its OWN document, so two people editing
+// different courts at the same time never overwrite each other. Shared data
+// lives in Firestore under leagues/{leagueCode}/items/{key} so anyone using
+// the same league code sees everyone else's live courts and scores. If
+// Firebase isn't configured (firebaseConfig above still has placeholders),
+// the app just runs in local-only mode for that browser session.
+function itemsCollection() {
+  return db.collection('leagues').doc(leagueCode).collection('items');
+}
+
+async function storSet(key, value) {
+  if (!storageAvailable) return;
+  try {
+    // Firestore rejects `undefined` fields outright (the old window.storage
+    // API just silently dropped them via JSON.stringify) — round-tripping
+    // through JSON first keeps that same forgiving behavior.
+    const safeValue = JSON.parse(JSON.stringify(value));
+    await itemsCollection().doc(key).set({ value: safeValue });
+  } catch (e) { console.error('storage set failed', key, e); }
+}
+async function storGet(key) {
+  if (!storageAvailable) return null;
+  try {
+    const snap = await itemsCollection().doc(key).get();
+    return snap.exists ? snap.data().value : null;
+  } catch (e) { return null; }
+}
+async function storDelete(key) {
+  if (!storageAvailable) return;
+  try { await itemsCollection().doc(key).delete(); } catch (e) {}
+}
+async function storListKeys(prefix) {
+  if (!storageAvailable) return [];
+  try {
+    const end = prefix + '\uf8ff'; // Firestore's standard "starts with" trick
+    const snap = await itemsCollection()
+      .where(firebase.firestore.FieldPath.documentId(), '>=', prefix)
+      .where(firebase.firestore.FieldPath.documentId(), '<', end)
+      .get();
+    return snap.docs.map(d => d.id);
+  } catch (e) { return []; }
+}
+
+// Personal (non-shared) storage — visible only on this browser/device,
+// unlike the Firestore helpers above which everyone in the league can read.
+// Used to remember which live courts THIS device has controller access to,
+// so control over scoring a court can be limited to its starter (or whoever
+// unlocked it with the passcode). This never needs to leave the device, so
+// plain localStorage is enough — no network round-trip either.
+function personalKey(key) {
+  return `pb:${leagueCode}:${key}`;
+}
+async function storSetPersonal(key, value) {
+  try { localStorage.setItem(personalKey(key), JSON.stringify(value)); }
+  catch (e) { console.error('personal storage set failed', key, e); }
+}
+async function storGetPersonal(key) {
+  try {
+    const raw = localStorage.getItem(personalKey(key));
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function saveSchedule() {
+  storSet('schedule', {
+    roster: roster.map(p => ({ name: p.name, skill: p.skill })),
+    mode: document.getElementById('pairingMode').value,
+    rounds: document.getElementById('rounds').value,
+    numCourts: document.getElementById('numCourts').value,
+    matchRounds: matchRounds.map(rd => ({
+      roundNum: rd.roundNum,
+      courts: rd.courts.map(c => ({ courtNumber: c.courtNumber, type: c.type, teamA: c.teamA, teamB: c.teamB, players: c.players }))
+    }))
+  });
+}
+
+// Deletes saved round scores. Pass a Set of round numbers to KEEP (e.g. the
+// rounds that are already finished) so regenerating pairings to fit newly
+// added players never erases scores from games that already happened.
+async function clearScoreKeys(keepRoundNums) {
+  const keep = keepRoundNums || new Set();
+  const keys = await storListKeys('score:');
+  const toDelete = keys.filter(k => {
+    const roundNum = parseInt(k.split(':')[1]);
+    return !keep.has(roundNum);
+  });
+  await Promise.all(toDelete.map(k => storDelete(k)));
+}
+
+async function saveCourtScore(roundNum, courtNumber, scoreA, scoreB, finished) {
+  await storSet(`score:${roundNum}:${courtNumber}`, { scoreA, scoreB, finished: !!finished });
+}
+
+async function loadScoresInto(rounds) {
+  const keys = await storListKeys('score:');
+  for (const key of keys) {
+    const val = await storGet(key);
+    if (!val) continue;
+    const [, roundNum, courtNumber] = key.split(':').map((v, i) => i === 0 ? v : parseInt(v));
+    const round = rounds.find(r => r.roundNum === roundNum);
+    const court = round && round.courts.find(c => c.courtNumber === courtNumber);
+    if (court) { court.scoreA = val.scoreA; court.scoreB = val.scoreB; court.finished = !!val.finished; }
+  }
+}
+
+async function loadLiveGamesFromStorage() {
+  const keys = await storListKeys('live:');
+  const games = [];
+  for (const key of keys) {
+    const val = await storGet(key);
+    if (val) games.push({ ...val, history: [] });
+  }
+  games.sort((a, b) => a.id.localeCompare ? a.id.localeCompare(b.id) : 0);
+  return games;
+}
+
+async function initFromStorage() {
+  if (!storageAvailable) { updateRoleBar(); return; }
+  const banner = document.getElementById('syncBanner');
+  if (banner) banner.textContent = 'Loading saved data…';
+
+  // Figure out this league's organizer password (if any) and whether this
+  // device already has admin access — either it just authenticated via the
+  // landing screen (isAdmin/orgPassHash already set by the caller), or this
+  // browser previously entered the matching password and it was remembered.
+  const league = await storGet('league');
+  orgPassHash = league ? (league.orgPassHash || null) : orgPassHash;
+  organizerName = league ? (league.organizerName || '') : organizerName;
+  leagueName = league ? (league.leagueName || '') : '';
+  const storedHash = await storGetPersonal('adminHash');
+  // Only two ways to legitimately gain admin here:
+  //  1) This device already proved it knows the org password (stored hash matches), or
+  //  2) This device is the one bootstrapping a brand-new league that has never had a
+  //     password set (and only if it did NOT explicitly choose "Continue as Viewer").
+  // A viewer's explicit choice (joinedAsViewer) must never be silently upgraded just
+  // because orgPassHash happens to be missing/falsy at this moment — that was the bug:
+  // any guest could end up with admin control whenever a league's password lookup failed.
+  const provenByStoredHash = !!storedHash && !!orgPassHash && storedHash === orgPassHash;
+  const bootstrappingFreshLeague = !league && !joinedAsViewer;
+  isAdmin = isAdmin || provenByStoredHash || bootstrappingFreshLeague;
+  updateRoleBar();
+  updateLeagueNameDisplay();
+
+  const schedule = await storGet('schedule');
+  if (schedule) {
+    if (schedule.roster) {
+      // current format: roster is the single source of truth
+      roster = schedule.roster.map(p => ({ id: rosterIdCounter++, name: p.name, skill: p.skill }));
+    } else if (schedule.players) {
+      // legacy format: separate players list + skillMap
+      roster = schedule.players.map(name => ({ id: rosterIdCounter++, name, skill: (schedule.skillMap || {})[name] || 5 }));
+    }
+    if (schedule.mode) document.getElementById('pairingMode').value = schedule.mode;
+    if (schedule.rounds) document.getElementById('rounds').value = schedule.rounds;
+    if (schedule.numCourts) document.getElementById('numCourts').value = schedule.numCourts;
+    else if (schedule.perCourt) document.getElementById('numCourts').value = 2; // legacy save, best guess
+
+    if (schedule.matchRounds && schedule.matchRounds.length) {
+      matchRounds = schedule.matchRounds.map(rd => ({
+        roundNum: rd.roundNum,
+        courts: rd.courts.map(c => ({ ...c, scoreA: null, scoreB: null, finished: false }))
+      }));
+      await loadScoresInto(matchRounds);
+      renderPairingFromState();
+      pairingSetupOpen = false; // a schedule already exists (e.g. synced from another device) — keep it out of the way
+    }
+    renderSkillList();
+  }
+
+  applyPairingSetupVisibility();
+  liveGames = await loadLiveGamesFromStorage();
+
+  if (banner) banner.textContent = '';
+  const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+  if (activeTab === 'pairing') renderPairingFromState();
+  if (activeTab === 'leaderboard') renderLeaderboard();
+  if (activeTab === 'live') renderLiveTab();
+}
+
+// ---------------- PLAYER / SKILL LIST (names are edited directly here) ----------------
+const countPill = document.getElementById('countPill');
+
+function defaultRoster() {
+  return ['Juan', 'Maria']
+    .map(name => ({ id: rosterIdCounter++, name, skill: 5 }));
+}
+roster = defaultRoster();
+
+function currentNames() {
+  return roster.map(p => p.name.trim()).filter(Boolean);
+}
+
+function skillOf(name) {
+  const p = roster.find(pl => pl.name.trim() === name);
+  return p ? p.skill : 5;
+}
+
+function skillColor(skill) {
+  if (skill <= 3) return '#e07a5f';
+  if (skill <= 6) return '#d99a2b';
+  return '#2d6a4f';
+}
+
+function updateCountPill() {
+  countPill.textContent = roster.filter(p => p.name.trim()).length;
+}
+
+function addPlayer() {
+  if (!isAdmin) return;
+  roster.push({ id: rosterIdCounter++, name: '', skill: 5 });
+  renderSkillList();
+  const inputs = document.getElementById('skillList').querySelectorAll('.pname-input');
+  const last = inputs[inputs.length - 1];
+  if (last) last.focus();
+}
+
+function removePlayer(id) {
+  if (!isAdmin) return;
+  roster = roster.filter(p => p.id !== id);
+  renderSkillList();
+  saveRosterOnly();
+}
+
+async function clearAllPlayers() {
+  if (!isAdmin) return;
+  if (roster.length === 0) return;
+  const ok = await appConfirm('Remove all players from the list? This does not affect any schedule you already generated.');
+  if (!ok) return;
+  roster = [];
+  renderSkillList();
+  // Persist immediately — roster edits otherwise only get saved when a
+  // schedule is generated, so without this the old roster could reappear
+  // after a reload or sync from another device.
+  await saveRosterOnly();
+}
+
+// Saves just the roster portion of the schedule record, preserving whatever
+// generated matchRounds/rounds/numCourts are already stored.
+async function saveRosterOnly() {
+  const existing = (await storGet('schedule')) || {};
+  await storSet('schedule', {
+    ...existing,
+    roster: roster.map(p => ({ name: p.name, skill: p.skill }))
+  });
+}
+
+// 10-star skill rating: clickable (tap a star to set that level) and
+// slidable (press and drag across the stars, mouse or touch, to scrub the
+// value) — a more intuitive replacement for the old slider.
+function setupStarRating(container) {
+  const id = parseInt(container.dataset.id);
+  let dragging = false;
+
+  function valueAtX(clientX) {
+    const stars = [...container.querySelectorAll('.star')];
+    if (!stars.length) return null;
+    const first = stars[0].getBoundingClientRect();
+    const last = stars[stars.length - 1].getBoundingClientRect();
+    if (clientX <= first.left) return 1;
+    if (clientX >= last.right) return stars.length;
+    for (const s of stars) {
+      const r = s.getBoundingClientRect();
+      if (clientX >= r.left && clientX <= r.right) return parseInt(s.dataset.value);
+    }
+    return null;
+  }
+
+  function applyValue(val) {
+    if (!val) return;
+    const p = roster.find(pl => pl.id === id);
+    if (!p) return;
+    p.skill = val;
+    container.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('filled', parseInt(s.dataset.value) <= val);
     });
+    container.setAttribute('aria-valuenow', val);
+    container.title = `Skill level: ${val}/10`;
+    const badge = container.nextElementSibling;
+    if (badge) { badge.textContent = val; badge.style.background = skillColor(val); }
   }
 
-  window.testTelegramNotif = function() {
-    if (!telegramReady()) { toast('Telegram not configured — check bot token & chat ID.'); return; }
-    toast('Sending test message...');
-    sendTelegramMessage('✅ Test message from Dorm Repairs app. If you see this, Telegram alerts are working!')
-      .then(res => {
-        if (res.ok) toast('Test sent! Check Telegram.');
-        else toast('Test failed — check console for details.');
-      });
-  };
+  container.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    try { container.setPointerCapture(e.pointerId); } catch (err) {}
+    applyValue(valueAtX(e.clientX));
+    e.preventDefault();
+  });
+  container.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    applyValue(valueAtX(e.clientX));
+  });
+  container.addEventListener('pointerup', () => { dragging = false; });
+  container.addEventListener('pointercancel', () => { dragging = false; });
 
-  function textbeltAlreadySentToday() {
-    const last = localStorage.getItem(TEXTBELT_STORAGE_KEY);
-    const today = new Date().toDateString();
-    return last === today;
-  }
+  // Keyboard accessibility: left/right arrows nudge the value.
+  container.setAttribute('tabindex', '0');
+  container.addEventListener('keydown', (e) => {
+    const p = roster.find(pl => pl.id === id);
+    if (!p) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { applyValue(Math.min(10, p.skill + 1)); e.preventDefault(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { applyValue(Math.max(1, p.skill - 1)); e.preventDefault(); }
+  });
+}
 
-  function fireTextbeltNotif(r) {
-    if (!TEXTBELT_PHONE) return;
-    if (textbeltAlreadySentToday()) {
-      console.log('Textbelt: daily free SMS already used today, skipping.');
-      return;
-    }
-    const message = `New repair request from ${r.name || 'N/A'} (${r.room || 'N/A'}): ${r.task || 'N/A'}`;
-    fetch('https://textbelt.com/text', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: TEXTBELT_PHONE, message, key: 'textbelt' })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem(TEXTBELT_STORAGE_KEY, new Date().toDateString());
-          console.log('Textbelt SMS sent (free daily quota used).');
-        } else {
-          console.warn('Textbelt SMS failed:', data.error);
-          toast('SMS failed: ' + (data.error || 'unknown error'));
-        }
-      })
-      .catch(err => {
-        console.warn('Textbelt network error:', err);
-        toast('SMS failed — network error.');
-      });
-  }
+function renderSkillList() {
+  updateCountPill();
+  const container = document.getElementById('skillList');
+  container.innerHTML = '';
 
-  window.testTextbeltNotif = function() {
-    if (!TEXTBELT_PHONE) { toast('Textbelt phone not configured.'); return; }
-    toast('Sending test SMS (uses your free daily quota)...');
-    fetch('https://textbelt.com/text', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: TEXTBELT_PHONE, message: 'Test SMS from Dorm Repairs app.', key: 'textbelt' })
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log('Textbelt test response:', data);
-        if (data.success) {
-          localStorage.setItem(TEXTBELT_STORAGE_KEY, new Date().toDateString());
-          toast('Test SMS sent! Check your phone.');
-        } else {
-          toast('SMS failed: ' + (data.error || 'unknown error'));
-        }
-      })
-      .catch(err => {
-        console.warn('Textbelt network error:', err);
-        toast('SMS failed — network error.');
-      });
-  };
-
-  // Real-time listener — fires on every change from any device
-  const q = query(col, orderBy('createdAt', 'desc'));
-  onSnapshot(q, (snapshot) => {
-    const newDocs = [];
-    snapshot.docChanges().forEach(ch => {
-      if (ch.type === 'added') {
-        const data = { id: ch.doc.id, ...ch.doc.data() };
-        if (!firstSnapshot && !seenIds.has(data.id)) newDocs.push(data);
-        seenIds.add(data.id);
-      }
-    });
-    firstSnapshot = false;
-    requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    newDocs.forEach(r => { fireDesktopNotif(r); fireEmailNotif(r); });
-    autoArchive();
-    renderAll();
-    refreshNotifButtons();
+  roster.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'skill-row';
+    const starsHtml = Array.from({ length: 10 }, (_, i) => i + 1)
+      .map(v => `<span class="star ${v <= p.skill ? 'filled' : ''}" data-value="${v}">★</span>`)
+      .join('');
+    row.innerHTML = `
+      <input type="text" class="pname-input" placeholder="Player name" value="${p.name.replace(/"/g, '&quot;')}" data-id="${p.id}">
+      <div class="star-rating" data-id="${p.id}" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="${p.skill}" title="Skill level: ${p.skill}/10">${starsHtml}</div>
+      <div class="skill-badge" style="background:${skillColor(p.skill)}">${p.skill}</div>
+      <button class="remove-player-btn" data-id="${p.id}" title="Remove player">✕</button>
+    `;
+    container.appendChild(row);
   });
 
-  async function autoArchive() {
-    const now = Date.now();
-    for (const r of requests) {
-      if (r.status !== 'done' || r.archived) continue;
-      const ts = r.completedAt?.toMillis ? r.completedAt.toMillis()
-              : r.createdAt?.toMillis ? r.createdAt.toMillis()
-              : null;
-      if (ts && (now - ts) >= ARCHIVE_AFTER_MS) {
-        try { await updateDoc(doc(db, 'requests', r.id), { archived: true, archivedAt: serverTimestamp(), autoArchived: true }); } catch(e) {}
+  container.querySelectorAll('.pname-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const p = roster.find(pl => pl.id === parseInt(e.target.dataset.id));
+      if (p) p.name = e.target.value;
+      updateCountPill();
+    });
+  });
+
+  container.querySelectorAll('.star-rating').forEach(setupStarRating);
+
+  container.querySelectorAll('.remove-player-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => removePlayer(parseInt(e.target.dataset.id)));
+  });
+}
+
+renderSkillList();
+
+// ---------------- STARTUP: show the landing screen first ----------------
+// A shared link (e.g. https://yoursite.com/?league=K7QX2) skips straight to
+// the "Join a League" password/viewer step for that code, pre-filled, so
+// sharing a link still works as a one-tap invite — everyone else sees the
+// Start/Join choice screen first.
+showLandingChoice();
+const urlParams = new URLSearchParams(window.location.search);
+const urlLeague = (urlParams.get('league') || '').trim().toUpperCase();
+if (urlLeague) {
+  goToJoinAuth(urlLeague);
+}
+if (!storageAvailable) {
+  const banner = document.getElementById('syncBanner');
+  if (banner) {
+    banner.style.color = '#8a8a8a';
+    banner.textContent = 'Running in local-only mode — add your Firebase config in the script to sync across devices.';
+  }
+}
+
+// ---------------- TABS ----------------
+async function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'pairing') { await refreshScoresFromStorage(); renderPairingFromState(); }
+  if (tab === 'leaderboard') { await refreshScoresFromStorage(); renderLeaderboard(); }
+  if (tab === 'live') {
+    await refreshLiveFromStorage();
+    renderLiveTab();
+  }
+}
+
+// Auto-sync so courts started or scored on other devices show up here without
+// needing a manual refresh. Live tab polls quickly since games change fast;
+// Leaderboard has no text inputs to disturb so it's safe to poll too.
+setInterval(async () => {
+  if (!storageAvailable) return;
+  const active = document.querySelector('.tab-btn.active')?.dataset.tab;
+  if (active === 'live') { await refreshLiveFromStorage(); renderLiveTab(); }
+  if (active === 'leaderboard') { await refreshScoresFromStorage(); renderLeaderboard(); }
+}, 4000);
+
+// ---------------- PAIRING GENERATION (skill-balanced) ----------------
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function partnerKey(a, b) {
+  return [a, b].sort().join('|||');
+}
+
+// A round is "finished" once every scorable court in it has both scores
+// entered — finished rounds are never rebuilt or cleared when new players
+// are added and pairings are regenerated, and the leaderboard is computed
+// only from finished/scored courts, so late arrivals never distort it.
+function isRoundFinished(round) {
+  const scorable = round.courts.filter(c => c.type === '2v2' || c.type === '1v1');
+  if (scorable.length === 0) return false;
+  return scorable.every(c => c.finished === true);
+}
+
+// Snake-distribute a skill-sorted list of players across courts so total
+// skill per court is roughly even, while a per-attempt random jitter keeps
+// grouping varied round to round.
+function snakeDistribute(players, courtCount) {
+  const courts = Array.from({ length: courtCount }, () => []);
+  let court = 0, dir = 1;
+  for (const p of players) {
+    courts[court].push(p);
+    if (court + dir < 0 || court + dir >= courtCount) {
+      dir *= -1;
+    } else {
+      court += dir;
+    }
+  }
+  return courts;
+}
+
+// Given 4 players, find the 2v2 split minimizing skill difference between teams.
+function bestSplitOfFour(group) {
+  const combos = [
+    [[0,1],[2,3]],
+    [[0,2],[1,3]],
+    [[0,3],[1,2]]
+  ];
+  let best = null, bestDiff = Infinity;
+  for (const [ia, ib] of combos) {
+    const teamA = [group[ia[0]], group[ia[1]]];
+    const teamB = [group[ib[0]], group[ib[1]]];
+    const sumA = teamA[0].skill + teamA[1].skill;
+    const sumB = teamB[0].skill + teamB[1].skill;
+    const diff = Math.abs(sumA - sumB);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = { teamA, teamB, diff };
+    }
+  }
+  return best;
+}
+
+function buildRoundCourts(players, courtCount, partnerHistory) {
+  const attempts = 60;
+  let best = null, bestScore = Infinity;
+
+  for (let a = 0; a < attempts; a++) {
+    // jitter skill slightly so grouping varies between attempts/rounds
+    const jittered = players.map(p => ({ ...p, jSkill: p.skill + (Math.random() - 0.5) * 3 }));
+    jittered.sort((x, y) => y.jSkill - x.jSkill);
+    const groups = snakeDistribute(jittered, courtCount);
+
+    let skillPenalty = 0;
+    let partnerPenalty = 0;
+    const built = groups.map(group => {
+      if (group.length === 4) {
+        const split = bestSplitOfFour(group);
+        skillPenalty += split.diff;
+        partnerPenalty += (partnerHistory.get(partnerKey(split.teamA[0].name, split.teamA[1].name)) || 0);
+        partnerPenalty += (partnerHistory.get(partnerKey(split.teamB[0].name, split.teamB[1].name)) || 0);
+        return { type: '2v2', teamA: split.teamA, teamB: split.teamB, players: group };
+      } else if (group.length === 2) {
+        skillPenalty += Math.abs(group[0].skill - group[1].skill);
+        return { type: '1v1', teamA: [group[0]], teamB: [group[1]], players: group };
+      } else if (group.length === 3) {
+        return { type: 'group3', teamA: null, teamB: null, players: group };
+      } else {
+        return { type: 'bye', teamA: null, teamB: null, players: group };
       }
-    }
-  }
-
-  // Set today's date
-  document.getElementById('f-date').valueAsDate = new Date();
-
-  function toast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2200);
-  }
-
-  window.doLogin = function() {
-    const u = document.getElementById('mgr-user').value.trim();
-    const p = document.getElementById('mgr-pass').value;
-    if (u === MGR_USERNAME && p === MGR_PASSWORD) {
-      loggedIn = true;
-      document.getElementById('mgr-login').style.display = 'none';
-      document.getElementById('mgr-panel').style.display = 'block';
-      document.getElementById('login-error').style.display = 'none';
-      renderManager();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
-  };
-
-  window.doLogout = function() {
-    loggedIn = false;
-    document.getElementById('mgr-login').style.display = 'flex';
-    document.getElementById('mgr-panel').style.display = 'none';
-    document.getElementById('mgr-user').value = '';
-    document.getElementById('mgr-pass').value = '';
-  };
-
-  window.submitRequest = async function() {
-    const name = document.getElementById('f-name').value.trim();
-    const room = document.getElementById('f-room').value.trim();
-    const date = document.getElementById('f-date').value;
-    const task = document.getElementById('f-task').value.trim();
-    if (!name || !task || !date) { toast('Please fill in all required fields.'); return; }
-    try {
-      await addDoc(col, { name, room, date, task, status: 'new', remark: '', archived: false, createdAt: serverTimestamp() });
-      fireTelegramNotif({ name, room, date, task });
-      fireTextbeltNotif({ name, room, date, task });
-      document.getElementById('f-name').value = '';
-      document.getElementById('f-room').value = '';
-      document.getElementById('f-task').value = '';
-      document.getElementById('f-date').valueAsDate = new Date();
-      toast('Request submitted!');
-    } catch(e) { toast('Error submitting. Check connection.'); }
-  };
-
-  window.move = async function(id, status) {
-    try {
-      const patch = { status };
-      if (status === 'done') patch.completedAt = serverTimestamp();
-      else { patch.completedAt = null; patch.archived = false; }
-      await updateDoc(doc(db, 'requests', id), patch);
-      toast('Status updated.');
-    } catch(e) { toast('Error updating.'); }
-  };
-
-  window.archiveRequest = async function(id) {
-    try { await updateDoc(doc(db, 'requests', id), { archived: true, archivedAt: serverTimestamp(), autoArchived: false }); toast('Archived.'); }
-    catch(e) { toast('Error archiving.'); }
-  };
-
-  window.unarchiveRequest = async function(id) {
-    try { await updateDoc(doc(db, 'requests', id), { archived: false }); toast('Restored.'); }
-    catch(e) { toast('Error restoring.'); }
-  };
-
-  window.setMgrView = function(v) {
-    mgrView = v;
-    renderManager();
-  };
-
-  window.saveRemark = async function(id) {
-    const val = document.getElementById('rmk-' + id).value.trim();
-    try { await updateDoc(doc(db, 'requests', id), { remark: val }); toast('Remark saved.'); }
-    catch(e) { toast('Error saving remark.'); }
-  };
-
-  window.saveFeedback = async function(id) {
-    const existing = requests.find(r => r.id === id);
-    if (existing && existing.feedback) { toast('Feedback already sent.'); return; }
-    const val = document.getElementById('fb-' + id).value.trim();
-    if (!val) { toast('Please write your feedback first.'); return; }
-    try { await updateDoc(doc(db, 'requests', id), { feedback: val }); toast('Feedback sent — it can\'t be edited.'); }
-    catch(e) { toast('Error sending feedback.'); }
-  };
-
-  window.resetFeedback = async function(id) {
-    if (!confirm('Clear this feedback and let the requester submit a new one?')) return;
-    try { await updateDoc(doc(db, 'requests', id), { feedback: '' }); toast('Feedback reset — open for a new submission.'); }
-    catch(e) { toast('Error resetting feedback.'); }
-  };
-
-  window.remove = async function(id) {
-    if (!confirm('Delete this request?')) return;
-    try { await deleteDoc(doc(db, 'requests', id)); toast('Request deleted.'); }
-    catch(e) { toast('Error deleting.'); }
-  };
-
-  function renderAll() {
-    renderSummary();
-    renderBoard();
-    if (loggedIn) renderManager();
-  }
-
-  function statusBadge(s) {
-    if (s === 'new') return '<span class="badge badge-new">New</span>';
-    if (s === 'ongoing') return '<span class="badge badge-ongoing">On going</span>';
-    return '<span class="badge badge-done">Completed</span>';
-  }
-
-  function formatDate(d) {
-    if (!d) return '';
-    const [y,m,day] = d.split('-');
-    return `${day}/${m}/${y}`;
-  }
-
-  function remarkHtml(r) {
-    if (!r) return '';
-    return `<div class="remark-box"><strong>Manager's remark</strong>${esc(r)}</div>`;
-  }
-
-  function feedbackHtml(f) {
-    if (!f) return '';
-    return `<div class="feedback-box"><strong>Requester feedback</strong>${esc(f)}</div>`;
-  }
-
-  function requestCardHtml(r, opts = {}) {
-    const isOpen = expandedIds.has(r.id);
-    const feedbackSection = opts.allowFeedback
-      ? (r.feedback
-          ? `<div class="feedback-box"><strong>Your feedback</strong>${esc(r.feedback)}</div>`
-          : `<div class="feedback-input-row" onclick="event.stopPropagation()">
-              <textarea id="fb-${r.id}" placeholder="Write feedback about this request... (the feedback can't be edited once sent)"></textarea>
-              <button class="btn btn-sm" onclick="saveFeedback('${r.id}')">Send</button>
-            </div>`)
-      : '';
-    return `<div class="request-card expandable ${isOpen ? 'open' : ''}" onclick="toggleExpand('${r.id}')">
-      <div class="request-card-head">
-        <div>
-          <div class="task">${esc(r.task)}</div>
-          <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}</div>
-        </div>
-        <i class="ti ti-chevron-down expand-chevron"></i>
-      </div>
-      <div class="request-card-details">
-        ${statusBadge(r.status)}
-        ${remarkHtml(r.remark)}
-        ${opts.allowFeedback ? '' : feedbackHtml(r.feedback)}
-        ${feedbackSection}
-      </div>
-    </div>`;
-  }
-
-  function recentItemHtml(r, dotClass, statusLabel) {
-    const isOpen = expandedIds.has(r.id);
-    return `<div class="recent-item expandable ${isOpen ? 'open' : ''}" onclick="toggleExpand('${r.id}')">
-      <div class="recent-dot ${dotClass(r.status)}"></div>
-      <div style="flex:1">
-        <div class="recent-text">${esc(r.task)}</div>
-        <div class="recent-meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)} · ${statusLabel(r.status)}</div>
-        <div class="recent-details">
-          ${statusBadge(r.status)}
-          ${remarkHtml(r.remark)}
-        </div>
-      </div>
-      <i class="ti ti-chevron-down expand-chevron"></i>
-    </div>`;
-  }
-
-  function renderSummary() {
-    const active = requests.filter(r => !r.archived);
-    const total = active.length;
-    const nw = active.filter(r => r.status === 'new').length;
-    const og = active.filter(r => r.status === 'ongoing').length;
-    const dn = active.filter(r => r.status === 'done').length;
-    document.getElementById('s-total').textContent = total;
-    document.getElementById('s-new').textContent = nw;
-    document.getElementById('s-ongoing').textContent = og;
-    document.getElementById('s-done').textContent = dn;
-    const pct = v => total ? Math.round(v / total * 100) : 0;
-    const nwp = pct(nw), ogp = pct(og), dnp = pct(dn);
-    document.getElementById('p-new').style.width = nwp + '%';
-    document.getElementById('p-ongoing').style.width = ogp + '%';
-    document.getElementById('p-done').style.width = dnp + '%';
-    document.getElementById('p-new-pct').textContent = nwp + '%';
-    document.getElementById('p-ongoing-pct').textContent = ogp + '%';
-    document.getElementById('p-done-pct').textContent = dnp + '%';
-    const dotClass = s => s === 'new' ? 'dot-new' : s === 'ongoing' ? 'dot-ongoing' : 'dot-done';
-    const statusLabel = s => s === 'new' ? 'New' : s === 'ongoing' ? 'On going' : 'Completed';
-
-    if (activeFilter) {
-      document.getElementById('s-recent-wrap').style.display = 'none';
-      document.getElementById('s-filtered').style.display = '';
-      const labels = { new: 'New', ongoing: 'On going', done: 'Completed' };
-      const filtered = active.filter(r => r.status === activeFilter);
-      document.getElementById('filtered-title').textContent = labels[activeFilter] + ' requests (' + filtered.length + ')';
-      document.getElementById('s-filtered-list').innerHTML = filtered.length
-        ? filtered.map(r => requestCardHtml(r)).join('')
-        : '<div class="empty">No requests with this status.</div>';
-    } else {
-      document.getElementById('s-recent-wrap').style.display = '';
-      document.getElementById('s-filtered').style.display = 'none';
-      const recent = active.slice(0, 5);
-      document.getElementById('s-recent').innerHTML = recent.length
-        ? recent.map(r => recentItemHtml(r, dotClass, statusLabel)).join('')
-        : '<div class="empty">No requests yet.</div>';
-    }
-  }
-
-  function renderBoard() {
-    const groups = { new: [], ongoing: [], done: [] };
-    requests.filter(r => !r.archived).forEach(r => (groups[r.status] || groups.new).push(r));
-    [
-      { key: 'new', label: 'New', el: 'board-new' },
-      { key: 'ongoing', label: 'On going', el: 'board-ongoing' },
-      { key: 'done', label: 'Completed', el: 'board-done' },
-    ].forEach(({ key, label, el }) => {
-      const items = groups[key];
-      document.getElementById(el).innerHTML = `
-        <div class="section-head">${label} <span class="count">${items.length}</span></div>
-        ${items.length ? items.map(r => requestCardHtml(r, { allowFeedback: true })).join('') : '<div class="empty">No requests here yet.</div>'}
-        <div class="divider"></div>`;
     });
+
+    const totalScore = skillPenalty * 2 + partnerPenalty; // prioritize skill balance
+    if (totalScore < bestScore) {
+      bestScore = totalScore;
+      best = built;
+      if (totalScore === 0) break;
+    }
+  }
+  return best;
+}
+
+function renderPairingFromState() {
+  const output = document.getElementById('pairingOutput');
+  output.innerHTML = '';
+
+  if (matchRounds.length) {
+    const modeVal = document.getElementById('pairingMode').value;
+    const modeTag = document.createElement('div');
+    modeTag.className = 'skill-hint';
+    modeTag.style.marginBottom = '10px';
+    modeTag.textContent = `Format: ${modeVal === 'singles' ? 'Singles (1v1)' : 'Doubles (2v2)'}`;
+    output.appendChild(modeTag);
   }
 
-  function fmtArchivedAt(r) {
-    const ts = r.archivedAt?.toDate ? r.archivedAt.toDate() : null;
-    if (!ts) return '';
-    const s = ts.toLocaleDateString();
-    return ` · Archived ${s}${r.autoArchived ? ' (auto)' : ''}`;
-  }
+  matchRounds.forEach(rd => {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'round';
+    const title = document.createElement('div');
+    title.className = 'round-title';
+    title.textContent = `Round ${rd.roundNum}`;
+    roundDiv.appendChild(title);
 
-  function renderManager() {
-    const el = document.getElementById('mgr-board');
-    const activeCount = requests.filter(r => !r.archived).length;
-    const archivedCount = requests.filter(r => r.archived).length;
-    const list = mgrView === 'archived'
-      ? requests.filter(r => r.archived)
-      : requests.filter(r => !r.archived);
-    const toggle = `
-      <div style="display:flex;gap:6px;margin-bottom:12px">
-        <button class="btn btn-sm" style="${mgrView==='active'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setMgrView('active')">Active (${activeCount})</button>
-        <button class="btn btn-sm" style="${mgrView==='archived'?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="setMgrView('archived')">Archived (${archivedCount})</button>
-      </div>`;
-    if (!list.length) { el.innerHTML = toggle + `<div class="empty">No ${mgrView} requests.</div>`; return; }
-    el.innerHTML = toggle + list.map(r => `
-      <div class="request-card">
-        <div class="task">${esc(r.task)}</div>
-        <div class="meta">${esc(r.name)}${r.room ? ' · ' + esc(r.room) : ''} · ${formatDate(r.date)}${fmtArchivedAt(r)}</div>
-        ${statusBadge(r.status)}
-        ${feedbackHtml(r.feedback)}
-        <div class="actions">
-          ${!r.archived ? `
-            ${r.status !== 'new' ? `<button class="btn btn-sm" onclick="move('${r.id}','new')">Mark new</button>` : ''}
-            ${r.status !== 'ongoing' ? `<button class="btn btn-sm" onclick="move('${r.id}','ongoing')">On going</button>` : ''}
-            ${r.status !== 'done' ? `<button class="btn btn-sm" onclick="move('${r.id}','done')">Completed</button>` : ''}
-            <button class="btn btn-sm" onclick="archiveRequest('${r.id}')"><i class="ti ti-archive"></i> Archive</button>
-          ` : `
-            <button class="btn btn-sm" onclick="unarchiveRequest('${r.id}')"><i class="ti ti-archive-off"></i> Restore</button>
-          `}
-          ${r.feedback ? `<button class="btn btn-sm" onclick="resetFeedback('${r.id}')"><i class="ti ti-refresh"></i> Reset feedback</button>` : ''}
-          <button class="btn btn-sm" style="color:var(--danger-text);border-color:var(--danger-border)" onclick="remove('${r.id}')">Delete</button>
-        </div>
-        <div class="remark-row">
-          <textarea id="rmk-${r.id}" placeholder="Add a remark...">${esc(r.remark || '')}</textarea>
-          <button class="btn btn-sm" onclick="saveRemark('${r.id}')">Save</button>
-        </div>
-      </div>`).join('');
-  }
+    rd.courts.forEach(c => {
+      const skillTag = name => `${name} <span class="sk">(${skillOf(name)})</span>`;
 
-  window.switchTab = function(name) {
-    currentTab = name;
-    ['submit','summary','board','manager'].forEach(t => {
-      document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
-      document.querySelectorAll('.tab')[['submit','summary','board','manager'].indexOf(t)].classList.toggle('active', t === name);
+      // Non-scorable entries (odd group / resting) render as before, no
+      // score panel attached.
+      if (c.type === 'group3') {
+        const courtDiv = document.createElement('div');
+        courtDiv.className = 'court';
+        courtDiv.innerHTML = `<div><div class="label">Court ${c.courtNumber} (odd group)</div><div class="team">${c.players.map(skillTag).join(', ')}</div></div>`;
+        roundDiv.appendChild(courtDiv);
+        return;
+      }
+      if (c.type === 'bye') {
+        const courtDiv = document.createElement('div');
+        courtDiv.className = 'court';
+        const label = c.courtNumber ? `Sitting out (Court ${c.courtNumber})` : 'Resting this round';
+        courtDiv.innerHTML = `<div class="bye">${label}: ${c.players.join(', ')}</div>`;
+        roundDiv.appendChild(courtDiv);
+        return;
+      }
+
+      // Scorable court (2v2 or 1v1): team display + integrated scoring.
+      const teamAName = c.teamA.join(' & ');
+      const teamBName = c.teamB.join(' & ');
+      const key = `${rd.roundNum}-${c.courtNumber}`;
+      const isExpanded = expandedFinishedCourts.has(key);
+
+      if (c.finished && !isExpanded) {
+        // Collapsed: the whole pairing shrinks down to one tappable summary line.
+        const btn = document.createElement('button');
+        btn.className = 'match-collapsed-btn';
+        btn.onclick = () => toggleFinishedCourt(rd.roundNum, c.courtNumber);
+        btn.innerHTML = `<span>Court ${c.courtNumber}: <span class="mc-final">${teamAName} ${c.scoreA} – ${c.scoreB} ${teamBName}</span></span><span class="mc-caret">▼ expand</span>`;
+        roundDiv.appendChild(btn);
+        return;
+      }
+
+      const wrap = document.createElement('div');
+      wrap.className = 'pairing-court-block';
+
+      const courtDiv = document.createElement('div');
+      courtDiv.className = 'court';
+      if (c.type === '2v2') {
+        courtDiv.innerHTML = `
+          <div><div class="label">Court ${c.courtNumber}</div><div class="team">${skillTag(c.teamA[0])} & ${skillTag(c.teamA[1])}</div></div>
+          <div class="vs">VS</div>
+          <div><div class="label">&nbsp;</div><div class="team">${skillTag(c.teamB[0])} & ${skillTag(c.teamB[1])}</div></div>
+        `;
+      } else {
+        courtDiv.innerHTML = `
+          <div><div class="label">Court ${c.courtNumber}</div><div class="team">${skillTag(c.teamA[0])}</div></div>
+          <div class="vs">VS</div>
+          <div><div class="label">&nbsp;</div><div class="team">${skillTag(c.teamB[0])}</div></div>
+        `;
+      }
+      wrap.appendChild(courtDiv);
+
+      const scoreDiv = document.createElement('div');
+      scoreDiv.className = 'score-court';
+
+      if (c.finished) {
+        // Expanded, finished view: read-only final score + collapse/edit controls.
+        scoreDiv.innerHTML = `
+          <div class="match-finished-banner">
+            <span>🏆 Final Score</span>
+            ${isAdmin ? `<button class="match-edit-link" data-round="${rd.roundNum}" data-court="${c.courtNumber}">✏️ Edit score</button>` : ''}
+          </div>
+          <div class="score-row"><div class="team-name">${teamAName}</div><div style="font-weight:800;font-size:1rem;">${c.scoreA}</div></div>
+          <div class="score-row"><div class="team-name">${teamBName}</div><div style="font-weight:800;font-size:1rem;">${c.scoreB}</div></div>
+        `;
+        wrap.appendChild(scoreDiv);
+        const collapseBtn = document.createElement('button');
+        collapseBtn.className = 'match-collapsed-btn';
+        collapseBtn.onclick = () => toggleFinishedCourt(rd.roundNum, c.courtNumber);
+        collapseBtn.innerHTML = `<span class="mc-final">Court ${c.courtNumber} final</span><span class="mc-caret">▲ collapse</span>`;
+        roundDiv.appendChild(wrap);
+        roundDiv.appendChild(collapseBtn);
+      } else {
+        // Not finished yet: editable score inputs + Match Finished button.
+        scoreDiv.innerHTML = `
+          <div class="label">Enter Score</div>
+          <div class="score-row">
+            <div class="team-name">${teamAName}</div>
+            <input type="number" inputmode="numeric" min="0" step="1" class="score-input" placeholder="0" value="${c.scoreA ?? ''}" data-round="${rd.roundNum}" data-court="${c.courtNumber}" data-side="A">
+          </div>
+          <div class="score-row">
+            <div class="team-name">${teamBName}</div>
+            <input type="number" inputmode="numeric" min="0" step="1" class="score-input" placeholder="0" value="${c.scoreB ?? ''}" data-round="${rd.roundNum}" data-court="${c.courtNumber}" data-side="B">
+          </div>
+          <div class="match-score-error" id="score-error-${rd.roundNum}-${c.courtNumber}">Enter a valid, non-blank number for both teams before finishing the match.</div>
+          ${isAdmin ? `<button class="match-finish-btn" data-round="${rd.roundNum}" data-court="${c.courtNumber}">✅ Match Finished</button>` : `<div class="score-note">Only an admin can mark this match finished.</div>`}
+        `;
+        wrap.appendChild(scoreDiv);
+        roundDiv.appendChild(wrap);
+      }
     });
-  };
 
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    output.appendChild(roundDiv);
+  });
+
+  if (matchRounds.length) {
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'secondary';
+    refreshBtn.textContent = '🔄 Refresh (see scores entered on other devices)';
+    refreshBtn.onclick = manualRefreshPairing;
+    output.appendChild(refreshBtn);
   }
+
+  // Score input handlers — same auto-save-as-you-type behavior the old
+  // Scoring tab had, but the score never counts toward the leaderboard
+  // until "Match Finished" is pressed (see finishPairingMatch()).
+  output.querySelectorAll('.score-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const r = parseInt(e.target.dataset.round);
+      const cNum = parseInt(e.target.dataset.court);
+      const side = e.target.dataset.side;
+      const val = e.target.value === '' ? null : parseInt(e.target.value);
+      const round = matchRounds.find(rd => rd.roundNum === r);
+      const court = round && round.courts.find(ct => ct.courtNumber === cNum);
+      if (!court) return;
+      if (side === 'A') court.scoreA = val; else court.scoreB = val;
+      e.target.classList.remove('invalid');
+      const err = document.getElementById(`score-error-${r}-${cNum}`);
+      if (err) err.style.display = 'none';
+      saveCourtScore(r, cNum, court.scoreA, court.scoreB, false);
+    });
+  });
+
+  output.querySelectorAll('.match-finish-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const r = parseInt(e.target.dataset.round);
+      const cNum = parseInt(e.target.dataset.court);
+      finishPairingMatch(r, cNum);
+    });
+  });
+
+  output.querySelectorAll('.match-edit-link').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const r = parseInt(e.target.dataset.round);
+      const cNum = parseInt(e.target.dataset.court);
+      editPairingMatch(r, cNum);
+    });
+  });
+}
+
+function toggleFinishedCourt(roundNum, courtNumber) {
+  const key = `${roundNum}-${courtNumber}`;
+  if (expandedFinishedCourts.has(key)) expandedFinishedCourts.delete(key);
+  else expandedFinishedCourts.add(key);
+  renderPairingFromState();
+}
+
+// Validates both scores are present, numbers-only, and non-blank, then locks
+// the match in as finished — only finished matches count toward the
+// leaderboard, and the pairing collapses into a one-line summary button.
+function finishPairingMatch(roundNum, courtNumber) {
+  if (!isAdmin) return;
+  const round = matchRounds.find(rd => rd.roundNum === roundNum);
+  const court = round && round.courts.find(c => c.courtNumber === courtNumber);
+  if (!court) return;
+
+  const inputA = document.querySelector(`.score-input[data-round="${roundNum}"][data-court="${courtNumber}"][data-side="A"]`);
+  const inputB = document.querySelector(`.score-input[data-round="${roundNum}"][data-court="${courtNumber}"][data-side="B"]`);
+  const rawA = inputA ? inputA.value.trim() : '';
+  const rawB = inputB ? inputB.value.trim() : '';
+  const validA = rawA !== '' && /^\d+$/.test(rawA);
+  const validB = rawB !== '' && /^\d+$/.test(rawB);
+
+  if (inputA) inputA.classList.toggle('invalid', !validA);
+  if (inputB) inputB.classList.toggle('invalid', !validB);
+
+  if (!validA || !validB) {
+    const err = document.getElementById(`score-error-${roundNum}-${courtNumber}`);
+    if (err) err.style.display = 'block';
+    return;
+  }
+
+  court.scoreA = parseInt(rawA);
+  court.scoreB = parseInt(rawB);
+  court.finished = true;
+  expandedFinishedCourts.delete(`${roundNum}-${courtNumber}`); // collapse it
+  saveCourtScore(roundNum, courtNumber, court.scoreA, court.scoreB, true);
+  renderPairingFromState();
+  renderLeaderboard();
+}
+
+// Lets an admin re-open a finished match to correct a mistyped score.
+function editPairingMatch(roundNum, courtNumber) {
+  if (!isAdmin) return;
+  const round = matchRounds.find(rd => rd.roundNum === roundNum);
+  const court = round && round.courts.find(c => c.courtNumber === courtNumber);
+  if (!court) return;
+  court.finished = false;
+  expandedFinishedCourts.delete(`${roundNum}-${courtNumber}`);
+  saveCourtScore(roundNum, courtNumber, court.scoreA, court.scoreB, false);
+  renderPairingFromState();
+  renderLeaderboard();
+}
+
+async function generate() {
+  const errorMsg = document.getElementById('errorMsg');
+  errorMsg.textContent = '';
+
+  if (!isAdmin) {
+    errorMsg.textContent = 'Only the organizer/admin can generate pairings. Enter the admin password first.';
+    return;
+  }
+
+  const names = currentNames();
+  const mode = document.getElementById('pairingMode').value; // 'doubles' or 'singles'
+  const groupSize = mode === 'singles' ? 2 : 4;
+  const rounds = parseInt(document.getElementById('rounds').value) || 1;
+  const numCourts = Math.max(1, parseInt(document.getElementById('numCourts').value) || 1);
+
+  if (names.length < 2) {
+    errorMsg.textContent = 'Add at least 2 players to generate pairings.';
+    return;
+  }
+  const uniqueNames = new Set(names);
+  if (uniqueNames.size !== names.length) {
+    errorMsg.textContent = 'Warning: duplicate names detected — pairing will still run, but consider making names unique.';
+  }
+
+  const players = names.map(n => ({ name: n, skill: skillOf(n) }));
+
+  // Rounds that are already fully scored are never rebuilt — this is what
+  // lets the organizer add a late player and regenerate without disturbing
+  // games that already happened, so the leaderboard's history stays intact.
+  const finishedRounds = matchRounds.filter(isRoundFinished);
+  const finishedNums = new Set(finishedRounds.map(rd => rd.roundNum));
+
+  const partnerHistory = new Map();
+  const byeHistory = new Map(); // name -> times benched so far, kept balanced round to round
+  // Seed history from the finished rounds so upcoming rounds still avoid
+  // repeat partners / uneven byes relative to games already played.
+  finishedRounds.forEach(rd => rd.courts.forEach(c => {
+    if (c.type === '2v2') {
+      partnerHistory.set(partnerKey(c.teamA[0], c.teamA[1]), (partnerHistory.get(partnerKey(c.teamA[0], c.teamA[1])) || 0) + 1);
+      partnerHistory.set(partnerKey(c.teamB[0], c.teamB[1]), (partnerHistory.get(partnerKey(c.teamB[0], c.teamB[1])) || 0) + 1);
+    }
+    if (c.type === 'bye') {
+      c.players.forEach(n => byeHistory.set(n, (byeHistory.get(n) || 0) + 1));
+    }
+  }));
+
+  const newMatchRounds = [];
+
+  for (let r = 1; r <= rounds; r++) {
+    if (finishedNums.has(r)) {
+      // Already played and fully scored — carry it over untouched.
+      newMatchRounds.push(matchRounds.find(rd => rd.roundNum === r));
+      continue;
+    }
+
+    // If there are more players than the courts can hold (4 per court for
+    // doubles, 2 per court for singles), bench the excess this round —
+    // prioritizing whoever has been benched least so far, so everyone gets
+    // a roughly even number of rest rounds.
+    const capacity = numCourts * groupSize;
+    let activePlayers = players;
+    let benched = [];
+
+    if (players.length > capacity) {
+      const sorted = [...players].sort((a, b) =>
+        (byeHistory.get(a.name) || 0) - (byeHistory.get(b.name) || 0) + (Math.random() - 0.5) * 0.01
+      );
+      benched = sorted.slice(0, players.length - capacity);
+      const benchedNames = new Set(benched.map(p => p.name));
+      activePlayers = players.filter(p => !benchedNames.has(p.name));
+      benched.forEach(p => byeHistory.set(p.name, (byeHistory.get(p.name) || 0) + 1));
+    }
+
+    // Use fewer courts than requested if there simply aren't enough active
+    // players to fill them all (avoids 1-person "courts").
+    const effectiveCourts = Math.min(numCourts, Math.max(1, Math.floor(activePlayers.length / 2)));
+    const builtCourts = buildRoundCourts(activePlayers, effectiveCourts, partnerHistory);
+
+    // update partner history
+    builtCourts.forEach(c => {
+      if (c.type === '2v2') {
+        partnerHistory.set(partnerKey(c.teamA[0].name, c.teamA[1].name), (partnerHistory.get(partnerKey(c.teamA[0].name, c.teamA[1].name)) || 0) + 1);
+        partnerHistory.set(partnerKey(c.teamB[0].name, c.teamB[1].name), (partnerHistory.get(partnerKey(c.teamB[0].name, c.teamB[1].name)) || 0) + 1);
+      }
+    });
+
+    const roundCourts = builtCourts.map((c, idx) => ({
+      courtNumber: idx + 1,
+      type: c.type,
+      teamA: c.teamA ? c.teamA.map(p => p.name) : null,
+      teamB: c.teamB ? c.teamB.map(p => p.name) : null,
+      players: c.players.map(p => p.name),
+      scoreA: null,
+      scoreB: null,
+      finished: false
+    }));
+
+    if (benched.length) {
+      roundCourts.push({
+        courtNumber: null,
+        type: 'bye',
+        teamA: null,
+        teamB: null,
+        players: benched.map(p => p.name),
+        scoreA: null,
+        scoreB: null
+      });
+    }
+
+    newMatchRounds.push({ roundNum: r, courts: roundCourts });
+  }
+
+  matchRounds = newMatchRounds;
+
+  renderPairingFromState();
+  document.getElementById('leaderboardOutput').innerHTML = '';
+
+  // Minimize the setup card now that a schedule exists, so the pairings take
+  // center stage — still one tap away via the toggle button if more players
+  // need to be added and the schedule regenerated.
+  pairingSetupOpen = false;
+  applyPairingSetupVisibility();
+
+  // Only clear scores for the rounds that were actually rebuilt — finished
+  // rounds (and their scores) are left completely alone.
+  await clearScoreKeys(finishedNums);
+  await saveSchedule();
+}
+
+async function clearSchedule() {
+  if (!isAdmin) {
+    document.getElementById('errorMsg').textContent = 'Only the organizer/admin can clear the schedule. Enter the admin password first.';
+    return;
+  }
+  const ok = await appConfirm('This clears the saved schedule and all round scores for everyone in this league. Continue?');
+  if (!ok) return;
+  matchRounds = [];
+  document.getElementById('pairingOutput').innerHTML = '';
+  document.getElementById('leaderboardOutput').innerHTML = '';
+  pairingSetupOpen = true;
+  applyPairingSetupVisibility();
+  await clearScoreKeys();
+  await storDelete('schedule');
+}
+
+// ---------------- SCORE SYNC (shared by Pairing + Leaderboard tabs) ----------------
+async function refreshScoresFromStorage() {
+  if (!storageAvailable || matchRounds.length === 0) return;
+  await loadScoresInto(matchRounds);
+}
+
+async function manualRefreshPairing() {
+  await refreshScoresFromStorage();
+  renderPairingFromState();
+}
+
+// ---------------- LEADERBOARD TAB ----------------
+// ---- Games per player: finished / ongoing / upcoming, from the pairing schedule ----
+// "Finished" = match marked Match Finished. "Ongoing" = match not finished yet but a
+// score has already been entered for it (in progress). "Upcoming" = scheduled but no
+// score entered yet. Only real scorable courts (2v2/1v1) count as games — sitting out
+// or an odd-group round isn't a game played.
+function computeGameCounts() {
+  const counts = {};
+  function ensure(name) {
+    if (!counts[name]) counts[name] = { finished: 0, ongoing: 0, upcoming: 0 };
+    return counts[name];
+  }
+  // Seed every current roster player so everyone shows up, even at 0 games.
+  roster.forEach(p => { if (p.name && p.name.trim()) ensure(p.name.trim()); });
+
+  matchRounds.forEach(round => {
+    round.courts.forEach(c => {
+      if (c.type !== '2v2' && c.type !== '1v1') return;
+      const hasScore = c.scoreA !== null && c.scoreA !== undefined && !isNaN(c.scoreA)
+                     && c.scoreB !== null && c.scoreB !== undefined && !isNaN(c.scoreB);
+      const bucket = c.finished ? 'finished' : (hasScore ? 'ongoing' : 'upcoming');
+      [...c.teamA, ...c.teamB].forEach(name => { ensure(name)[bucket]++; });
+    });
+  });
+
+  return Object.entries(counts).map(([name, c]) => ({ name, ...c, total: c.finished + c.ongoing + c.upcoming }));
+}
+
+function renderGameCounts() {
+  const output = document.getElementById('gameCountsOutput');
+  if (!output) return;
+
+  const rows = computeGameCounts();
+  if (rows.length === 0) {
+    output.innerHTML = '';
+    return;
+  }
+
+  rows.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+
+  let html = `<div class="card">
+    <div class="round-title" style="margin-bottom:10px;">Games per Player</div>
+    <table class="leaderboard">
+      <thead><tr>
+        <th style="text-align:left">Player</th><th>Finished</th><th>Ongoing</th><th>Upcoming</th><th class="gc-total">Total</th>
+      </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    html += `<tr>
+      <td class="name">${r.name}</td>
+      <td><span class="count-chip finished">${r.finished}</span></td>
+      <td><span class="count-chip ongoing">${r.ongoing}</span></td>
+      <td><span class="count-chip upcoming">${r.upcoming}</span></td>
+      <td class="gc-total">${r.total}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  output.innerHTML = html;
+}
+
+function renderLeaderboard() {
+  renderGameCounts();
+  const output = document.getElementById('leaderboardOutput');
+  output.innerHTML = '';
+
+  const stats = {};
+  function ensure(name) {
+    if (!stats[name]) stats[name] = { wins: 0, losses: 0, ties: 0, pointsFor: 0, pointsAgainst: 0, gamesPlayed: 0 };
+    return stats[name];
+  }
+
+  let anyScored = false;
+  matchRounds.forEach(round => {
+    round.courts.forEach(c => {
+      if ((c.type !== '2v2' && c.type !== '1v1') || !c.finished || c.scoreA === null || c.scoreB === null || isNaN(c.scoreA) || isNaN(c.scoreB)) return;
+      anyScored = true;
+      const aWon = c.scoreA > c.scoreB;
+      const bWon = c.scoreB > c.scoreA;
+      c.teamA.forEach(p => {
+        const s = ensure(p);
+        s.gamesPlayed++;
+        s.pointsFor += c.scoreA;
+        s.pointsAgainst += c.scoreB;
+        if (aWon) s.wins++; else if (bWon) s.losses++; else s.ties++;
+      });
+      c.teamB.forEach(p => {
+        const s = ensure(p);
+        s.gamesPlayed++;
+        s.pointsFor += c.scoreB;
+        s.pointsAgainst += c.scoreA;
+        if (bWon) s.wins++; else if (aWon) s.losses++; else s.ties++;
+      });
+    });
+  });
+
+  if (matchRounds.length === 0) {
+    output.innerHTML = '<div class="empty-state">Generate pairings first, then enter scores on the Pairing tab.</div>';
+    return;
+  }
+  if (!anyScored) {
+    output.innerHTML = '<div class="empty-state">No finished matches yet. Enter a score and tap "Match Finished" on the Pairing tab to see the leaderboard.</div>';
+    return;
+  }
+
+  const rows = Object.entries(stats).map(([name, s]) => {
+    const diff = s.pointsFor - s.pointsAgainst;
+    const winPct = s.gamesPlayed > 0 ? (s.wins / s.gamesPlayed) : 0;
+    return { name, ...s, diff, winPct };
+  });
+
+  rows.sort((a, b) => b.winPct - a.winPct || b.diff - a.diff || b.wins - a.wins);
+
+  let html = `<div class="card"><table class="leaderboard">
+    <thead><tr>
+      <th>#</th><th style="text-align:left">Player</th><th>W</th><th>L</th><th>Win%</th><th>+/-</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach((r, i) => {
+    const rank = i + 1;
+    const badgeClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+    html += `<tr>
+      <td><span class="rank-badge ${badgeClass}">${rank}</span></td>
+      <td class="name">${r.name}</td>
+      <td>${r.wins}</td>
+      <td>${r.losses}</td>
+      <td>${Math.round(r.winPct * 100)}%</td>
+      <td>${r.diff > 0 ? '+' + r.diff : r.diff}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>
+    <button class="secondary" onclick="manualRefreshLeaderboard()">🔄 Refresh (see scores from other devices)</button>`;
+  output.innerHTML = html;
+}
+
+async function manualRefreshLeaderboard() {
+  await refreshScoresFromStorage();
+  renderLeaderboard();
+}
+
+// ---------------- LIVE SCORING (local, multi-court, server monitor) ----------------
+// Implements official side-out scoring: only the serving side can score a point.
+// Doubles: each side serves until it loses two rallies (server 1, then server 2),
+// EXCEPT the very first serve of the game, which is a single serve for the
+// starting side (so the game opens at server number 2, per USA Pickleball rules).
+// Singles: no second-server exception — any lost rally is an immediate side out.
+// Serving position: server serves from the right/even court when their own
+// score is even, and the left/odd court when their score is odd.
+let liveGames = []; // {id, gameType, teamAName, teamBName, scoreA, scoreB, winScore, winBy2, servingTeam, server, winner, history}
+let activeCourtId = null; // which court's scoreboard is currently shown (each court gets its own tab/view)
+let startFormOpen = true; // setup form starts visible; collapses once a court is running so the live score stays front and center
+
+// ---------------- COURT CONTROL (who can control scoring) ----------------
+// Control is now governed by the single league-wide admin password: any
+// admin device can score, undo, reset, or remove ANY court. Everyone else
+// watching the same league sees a live, read-only view and can pick up
+// control instantly by entering the admin password (see the role bar).
+function isMyCourt(id) {
+  return isAdmin;
+}
+
+// ---------------- PASSWORD HASHING ----------------
+async function hashPasscode(pass) {
+  if (window.crypto && window.crypto.subtle) {
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) { /* fall through to the simple fallback below */ }
+  }
+  // Fallback for contexts without Web Crypto (e.g. a plain file:// double-click
+  // instead of https). Not cryptographically strong, but keeps password
+  // checks working everywhere the app runs.
+  let h = 0;
+  for (let i = 0; i < pass.length; i++) h = (h * 31 + pass.charCodeAt(i)) >>> 0;
+  return 'fb-' + h.toString(16);
+}
+
+// A viewer tapping "Take Control" on a court is just a shortcut to the same
+// admin-password prompt used everywhere else in the app.
+function claimCourt(id) {
+  openAdminRequest();
+}
+
+function toggleStartForm() {
+  startFormOpen = !startFormOpen;
+  applyStartFormVisibility();
+}
+
+function applyStartFormVisibility() {
+  const form = document.getElementById('startCourtForm');
+  const btn = document.getElementById('startCourtToggleBtn');
+  if (!form || !btn) return;
+  form.style.display = startFormOpen ? 'block' : 'none';
+  btn.textContent = startFormOpen ? '– Hide Setup' : '+ Start New Court';
+}
+
+function makeCourtId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function updateServerOptions() {
+  const a = document.getElementById('teamAName').value.trim() || 'Team A';
+  const b = document.getElementById('teamBName').value.trim() || 'Team B';
+  document.getElementById('startServerAOpt').textContent = a;
+  document.getElementById('startServerBOpt').textContent = b;
+}
+document.getElementById('teamAName').addEventListener('input', updateServerOptions);
+document.getElementById('teamBName').addEventListener('input', updateServerOptions);
+
+// Only persist the fields that matter to everyone else; "history" is kept
+// local-only per device since undo is a personal convenience, not shared state.
+function saveLiveGame(g) {
+  const { history, ...persisted } = g;
+  storSet(`live:${g.id}`, persisted);
+}
+
+async function startCourt() {
+  if (!isAdmin) return;
+  const teamAName = document.getElementById('teamAName').value.trim() || 'Team A';
+  const teamBName = document.getElementById('teamBName').value.trim() || 'Team B';
+  const winScore = parseInt(document.getElementById('winScore').value) || 11;
+  const winBy2 = document.getElementById('winBy2').checked;
+  const gameType = document.getElementById('gameType').value;
+  const servingTeam = document.getElementById('startingServer').value;
+  const scorekeeperName = document.getElementById('scorekeeperName').value.trim();
+
+  const g = {
+    id: makeCourtId(),
+    gameType,
+    teamAName, teamBName,
+    scoreA: 0, scoreB: 0,
+    winScore, winBy2,
+    servingTeam,
+    server: gameType === 'doubles' ? 2 : 1, // opening serve of the game is a single serve
+    winner: null,
+    history: [],
+    scorekeeperName
+  };
+  liveGames.push(g);
+  saveLiveGame(g);
+  startFormOpen = false; // focus on the live score once a court is running
+  activeCourtId = g.id; // jump straight to the new court's own scoreboard/tab
+  renderLiveTab();
+}
+
+function selectCourt(id) {
+  activeCourtId = id;
+  renderLiveTab();
+}
+
+function findGame(id) {
+  return liveGames.find(g => g.id === id);
+}
+
+function snapshot(g) {
+  return { scoreA: g.scoreA, scoreB: g.scoreB, servingTeam: g.servingTeam, server: g.server, winner: g.winner };
+}
+
+function checkWin(g) {
+  const s = g.servingTeam === 'A' ? g.scoreA : g.scoreB;
+  const o = g.servingTeam === 'A' ? g.scoreB : g.scoreA;
+  if (s >= g.winScore && (!g.winBy2 || s - o >= 2)) g.winner = g.servingTeam;
+}
+
+// side: 'A' or 'B' — the team that won this particular rally.
+function pointWon(id, side) {
+  if (!isMyCourt(id)) return; // only the court's starter can score it
+  const g = findGame(id);
+  if (!g || g.winner) return;
+  g.history.push(snapshot(g));
+
+  if (side === g.servingTeam) {
+    // Serving side wins the rally: they score. Server stays up (crosses to the other court).
+    if (g.servingTeam === 'A') g.scoreA++; else g.scoreB++;
+    checkWin(g);
+  } else {
+    // Receiving side wins the rally: a fault.
+    if (g.gameType === 'doubles' && g.server === 1) {
+      // First server of this side is out; second server (partner) is now up.
+      g.server = 2;
+    } else {
+      // Side out: serve passes to the other team, starting with server 1.
+      g.servingTeam = g.servingTeam === 'A' ? 'B' : 'A';
+      g.server = 1;
+    }
+  }
+  saveLiveGame(g);
+  renderLiveTab();
+}
+
+function undoPoint(id) {
+  if (!isMyCourt(id)) return;
+  const g = findGame(id);
+  if (!g || g.history.length === 0) return;
+  const prev = g.history.pop();
+  Object.assign(g, prev);
+  saveLiveGame(g);
+  renderLiveTab();
+}
+
+function resetCourt(id) {
+  if (!isMyCourt(id)) return;
+  const g = findGame(id);
+  if (!g) return;
+  g.scoreA = 0; g.scoreB = 0;
+  g.server = g.gameType === 'doubles' ? 2 : 1;
+  g.winner = null;
+  g.history = [];
+  saveLiveGame(g);
+  renderLiveTab();
+}
+
+// Manual override in case the scorekeeper needs to correct who's serving
+// (e.g. mis-tapped earlier) without it counting as a point or side out.
+function setServerNumber(id, num) {
+  if (!isMyCourt(id)) return;
+  const g = findGame(id);
+  if (!g || g.winner) return;
+  g.server = num;
+  saveLiveGame(g);
+  renderLiveTab();
+}
+
+function removeCourt(id) {
+  if (!isMyCourt(id)) return; // only admins can end/remove a court
+  liveGames = liveGames.filter(g => g.id !== id);
+  storDelete(`live:${id}`);
+  if (activeCourtId === id) activeCourtId = liveGames.length ? liveGames[0].id : null;
+  renderLiveTab();
+}
+
+async function clearAllLiveCourts() {
+  if (!isAdmin) return;
+  const ok = await appConfirm('This removes every active court for everyone in this league. Continue?');
+  if (!ok) return;
+  const ids = liveGames.map(g => g.id);
+  liveGames = [];
+  activeCourtId = null;
+  renderLiveTab();
+  await Promise.all(ids.map(id => storDelete(`live:${id}`)));
+}
+
+async function refreshLiveFromStorage() {
+  if (!storageAvailable) return;
+  liveGames = await loadLiveGamesFromStorage();
+}
+
+async function manualRefreshLive() {
+  await refreshLiveFromStorage();
+  renderLiveTab();
+}
+
+function serveSide(g) {
+  const servingScore = g.servingTeam === 'A' ? g.scoreA : g.scoreB;
+  return servingScore % 2 === 0 ? 'Right' : 'Left';
+}
+
+function scoreCall(g) {
+  const servingScore = g.servingTeam === 'A' ? g.scoreA : g.scoreB;
+  const receivingScore = g.servingTeam === 'A' ? g.scoreB : g.scoreA;
+  return g.gameType === 'doubles'
+    ? `${servingScore}-${receivingScore}-${g.server}`
+    : `${servingScore}-${receivingScore}`;
+}
+
+function renderLiveTab() {
+  const tabsSection = document.getElementById('courtTabs');
+  const courtsSection = document.getElementById('liveCourts');
+
+  // Keep the setup form open by default when there's nothing running yet;
+  // otherwise respect whatever the user last chose (open/collapsed).
+  if (liveGames.length === 0) startFormOpen = true;
+  applyStartFormVisibility();
+
+  if (liveGames.length === 0) {
+    tabsSection.innerHTML = '';
+    activeCourtId = null;
+    courtsSection.innerHTML = '<div class="empty-state">No courts running yet. Start one above — each court you start gets its own tab and scoreboard.</div>';
+    return;
+  }
+
+  // Make sure the active tab still points at a real, currently-running court
+  // (e.g. it may have been removed on another device).
+  if (!liveGames.some(g => g.id === activeCourtId)) {
+    activeCourtId = liveGames[0].id;
+  }
+
+  // Tab bar: one tab per court, each its own switchable scoreboard view.
+  // Only shown when there's more than one court, since a single court needs
+  // no switching.
+  if (liveGames.length <= 1) {
+    tabsSection.innerHTML = '';
+  } else {
+    let tabsHtml = '';
+    liveGames.forEach((g, idx) => {
+      const isActive = g.id === activeCourtId;
+      const owned = isMyCourt(g.id);
+      tabsHtml += `
+        <button class="court-tab ${isActive ? 'active' : ''} ${g.winner ? 'has-winner' : ''}" onclick="selectCourt('${g.id}')">
+          <div class="tab-label">Court ${idx + 1} ${owned ? '' : '👁'}</div>
+          <div class="tab-score">${g.scoreA} - ${g.scoreB}</div>
+          <div class="tab-serve">${g.teamAName} vs ${g.teamBName}</div>
+        </button>
+      `;
+    });
+    tabsSection.innerHTML = tabsHtml;
+  }
+
+  // Only the active court's full scoreboard is shown at a time.
+  const g = liveGames.find(gm => gm.id === activeCourtId);
+  courtsSection.innerHTML = '';
+  if (!g) return;
+
+  const owned = isMyCourt(g.id);
+
+  const div = document.createElement('div');
+  div.className = 'court-card';
+  div.id = `court-${g.id}`;
+  const servingName = g.servingTeam === 'A' ? g.teamAName : g.teamBName;
+  const side = serveSide(g);
+
+  // Only the scorekeeper who started this court can flip who's serving.
+  const serverToggle = g.gameType === 'doubles' ? (owned ? `
+    <div class="server-toggle">
+      <span>Which server is up?</span>
+      <div class="server-toggle-btns">
+        <button class="${g.server === 1 ? 'active' : ''}" onclick="setServerNumber('${g.id}',1)">Server 1</button>
+        <button class="${g.server === 2 ? 'active' : ''}" onclick="setServerNumber('${g.id}',2)">Server 2</button>
+      </div>
+    </div>` : `
+    <div class="server-toggle">
+      <span>Server ${g.server} is up</span>
+    </div>`) : '';
+
+  // Non-owners get a read-only banner instead of scoring/undo/reset controls,
+  // plus a fallback to take over if the original scorekeeper is unreachable.
+  const controlsHtml = owned ? `
+    ${g.winner ? '' : `
+    <div class="rally-hint">Tap whichever side won the point just played — score and next server update automatically.</div>
+    <div class="rally-controls">
+      <button onclick="pointWon('${g.id}','A')">✅ ${g.teamAName} won the point</button>
+      <button onclick="pointWon('${g.id}','B')">✅ ${g.teamBName} won the point</button>
+    </div>`}
+    <div class="live-controls">
+      <button onclick="undoPoint('${g.id}')" ${g.history.length === 0 ? 'disabled' : ''}>↩ Undo Last Point</button>
+      <button onclick="resetCourt('${g.id}')">Reset Game</button>
+    </div>
+  ` : `
+    <div class="viewer-note">👁 View only — started by ${g.scorekeeperName ? `<strong>${g.scorekeeperName}</strong>` : 'a scorekeeper'}. You can watch the score update live here — enter the admin password to take control.</div>
+    <div class="live-controls">
+      <button onclick="claimCourt('${g.id}')">Take Control</button>
+    </div>
+  `;
+
+  div.innerHTML = `
+    <div class="court-card-header">
+      <div class="ctitle">${g.teamAName} vs ${g.teamBName} <span style="opacity:0.75;font-weight:600;font-size:0.72rem;">(${g.gameType === 'singles' ? 'Singles' : 'Doubles'})</span></div>
+      ${owned ? `<button class="remove-btn" onclick="removeCourt('${g.id}')">✕</button>` : ''}
+    </div>
+    ${g.scorekeeperName ? `<div class="scorekeeper-label">Started by ${g.scorekeeperName}</div>` : ''}
+    <div class="serve-banner">
+      <span class="serve-ball"><svg class="pb-ball-icon" viewBox="0 0 32 32"><use href="#pbBallIcon"/></svg></span> <strong>${servingName}</strong> is serving from the <strong>${side}</strong> side
+    </div>
+    ${serverToggle}
+    <div class="score-teams">
+      <div class="score-block">
+        <div class="tname">${g.teamAName}${g.servingTeam === 'A' && !g.winner ? '<span class="serve-dot"><svg class="pb-ball-icon" viewBox="0 0 32 32"><use href="#pbBallIcon"/></svg></span>' : ''}</div>
+        <div class="snum">${g.scoreA}</div>
+      </div>
+      <div class="score-divider">:</div>
+      <div class="score-block">
+        <div class="tname">${g.teamBName}${g.servingTeam === 'B' && !g.winner ? '<span class="serve-dot"><svg class="pb-ball-icon" viewBox="0 0 32 32"><use href="#pbBallIcon"/></svg></span>' : ''}</div>
+        <div class="snum">${g.scoreB}</div>
+      </div>
+    </div>
+    <div class="score-call">${g.winner ? 'FINAL' : 'REFEREE CALL'}: ${scoreCall(g)}</div>
+    ${g.winner ? `<div class="winner-banner">🏆 ${g.winner === 'A' ? g.teamAName : g.teamBName} wins!</div>` : ''}
+    ${controlsHtml}
+  `;
+  courtsSection.appendChild(div);
+}
 </script>
 </body>
 </html>
